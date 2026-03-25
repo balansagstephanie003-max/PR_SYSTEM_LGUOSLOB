@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budget Office Dashboard - LGU Oslob</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-1: #7b7b7b;
+      --bg-2: #4e4e4e;
+      --bg-3: #222;
+      --panel: #ffffff;
+      --ink: #1f1f1f;
+      --muted: #666;
+      --line: #d8d8d8;
+      --accent: #2f2f2f;
+      --pending: #ff9800;
+      --approved: #2e7d32;
+      --rejected: #c62828;
+    }
+
+    body {
+      font-family: "Inter", "Segoe UI", sans-serif;
+      min-height: 100vh;
+      color: var(--ink);
+      background: radial-gradient(ellipse at top, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .topbar {
+      background: linear-gradient(160deg, #1f1f1f 0%, #5b5b5b 55%, #1f1f1f 100%);
+      border: 1px solid #8a8a8a;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+    }
+
+    .topbar h1 {
+      font-family: "Playfair Display", serif;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .topbar p { color: #dedede; font-size: 12px; }
+
+    .badge {
+      background: #ededed;
+      color: #111;
+      font-weight: 700;
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 5px 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .content {
+      width: min(1560px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      padding: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 6px;
+      color: #444;
+      font-weight: 600;
+    }
+
+    .field input {
+      width: 100%;
+      border: 1px solid #cfcfcf;
+      border-radius: 7px;
+      padding: 9px 10px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: #5b5b5b;
+      box-shadow: 0 0 0 2px rgba(31,31,31,0.1);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-dark { background: #2f2f2f; color: #fff; }
+    .btn-dark:hover { background: #1f1f1f; }
+    .btn-light { background: #efefef; color: #111; border: 1px solid #cfcfcf; }
+    .btn-light:hover { background: #e7e7e7; }
+    .btn-green { background: #2e7d32; color: #fff; }
+    .btn-red { background: #c62828; color: #fff; }
+
+    .status {
+      min-height: 18px;
+      margin-top: 8px;
+      color: #555;
+      font-size: 12px;
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .setup-box {
+      border: 1px dashed #c9c9c9;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafafa;
+    }
+
+    .setup-preview {
+      margin-top: 8px;
+      min-height: 62px;
+      border: 1px dashed #c9c9c9;
+      border-radius: 8px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      color: #666;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .setup-preview img {
+      max-width: 100%;
+      max-height: 52px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      background: #2d2d2d;
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .stat .num {
+      font-family: "Playfair Display", serif;
+      font-size: 28px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat .label {
+      font-size: 11px;
+      color: #d6d6d6;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .section-title {
+      font-family: "Playfair Display", serif;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+      gap: 14px;
+    }
+
+    #pendingGrid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .req {
+      border: 1px solid #d8d8d8;
+      border-left: 4px solid #5b5b5b;
+      border-radius: 10px;
+      padding: 16px;
+      background: #fff;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .dashboard-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel-card {
+      min-height: 560px;
+    }
+
+    .processed-placeholder {
+      border: 1px dashed #bbb;
+      border-radius: 10px;
+      padding: 26px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      background: #fafafa;
+    }
+
+    .req strong { color: #1f1f1f; }
+
+    .req-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+
+    .pending { background: #fff3e0; color: var(--pending); }
+    .approved { background: #e8f5e9; color: var(--approved); }
+    .rejected { background: #ffebee; color: var(--rejected); }
+
+    .empty {
+      border: 1px dashed #bbb;
+      border-radius: 10px;
+      padding: 26px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      background: #fafafa;
+    }
+
+    .hidden { display: none !important; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal {
+      width: min(700px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #d8d8d8;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.28);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ebebeb;
+      padding-bottom: 8px;
+    }
+
+    .modal-head h3 {
+      font-family: "Playfair Display", serif;
+      font-size: 20px;
+    }
+
+    .sig-pad {
+      width: 100%;
+      height: 140px;
+      border: 2px solid #1f1f1f;
+      border-radius: 8px;
+      touch-action: none;
+      background: #fff;
+    }
+
+    .stamp {
+      border: 2px dashed #5b5b5b;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #3a3a3a;
+      background: #f4f4f4;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .processed-global-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .processed-request-details.hidden {
+      display: none !important;
+    }
+
+    .filter-btn-active {
+      background: #2f2f2f !important;
+      color: #fff !important;
+      border-color: #2f2f2f !important;
+    }
+
+    .items-box {
+      margin-top: 8px;
+      border: 1px dashed #c7c7c7;
+      border-radius: 8px;
+      padding: 8px;
+      background: #fafafa;
+    }
+
+    .req-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .req-table th,
+    .req-table td {
+      border: 1px solid #cfcfcf;
+      padding: 5px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .req-table th {
+      background: #f2f2f2;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .sheet-banner {
+      margin-top: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #454545;
+      border-radius: 6px;
+      background: linear-gradient(160deg, #2e2e2e 0%, #515151 55%, #2e2e2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 8px 8px 10px;
+    }
+
+    .sheet-banner .title {
+      font-family: "Playfair Display", serif;
+      font-size: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      line-height: 1.1;
+    }
+
+    .sheet-banner .sub {
+      font-size: 14px;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
+      opacity: 0.95;
+    }
+
+    .sheet-banner .lgu {
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1;
+      opacity: 0.2;
+      letter-spacing: 4px;
+      margin-top: -4px;
+    }
+
+    .sheet-meta {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .sheet-meta td {
+      border: 1px solid #cfcfcf;
+      padding: 5px 6px;
+    }
+
+    .sheet-meta .label {
+      width: 130px;
+      background: linear-gradient(90deg, #353535 0%, #555 100%);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .sheet-purpose {
+      margin-top: 6px;
+      border: 1px solid #cfcfcf;
+      border-radius: 4px;
+      background: #f8f8f8;
+      padding: 7px;
+      min-height: 44px;
+      white-space: pre-wrap;
+      font-size: 12px;
+    }
+
+    .sheet-sign {
+      margin-top: 8px;
+      border: 1px solid #cfcfcf;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .sheet-sign-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #e9edf3;
+      border-bottom: 1px solid #cfcfcf;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .sheet-sign-head div { padding: 6px; }
+
+    .sheet-sign-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      font-size: 12px;
+    }
+
+    .sheet-sign-col {
+      border-right: 1px solid #cfcfcf;
+      padding: 8px;
+      min-height: 74px;
+    }
+
+    .sheet-sign-col:last-child {
+      border-right: none;
+    }
+
+    .sheet-signature-row {
+      margin-top: 6px;
+      border: 1px dashed #c8c8c8;
+      border-radius: 4px;
+      background: #fafafa;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .sheet-signature-row img {
+      max-width: 100%;
+      max-height: 38px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .sheet-sign-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .sheet-sign-table th,
+    .sheet-sign-table td {
+      border: 1px solid #cfcfcf;
+      padding: 6px;
+      vertical-align: middle;
+    }
+
+    .sheet-sign-table .left-label {
+      width: 130px;
+      background: linear-gradient(90deg, #353535 0%, #555 100%);
+      color: #fff;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .sheet-sign-title {
+      background: #e9edf3;
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .sheet-name-cell {
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .sheet-designation-cell {
+      text-align: center;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    .budget-approval-area {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .budget-approval-overlay {
+      position: relative;
+      width: min(460px, 100%);
+      min-height: 140px;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .budget-approval-stamp {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 1;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-align: center;
+      color: #3f3f3f;
+    }
+
+    .budget-approval-stamp img {
+      max-width: 92%;
+      max-height: 118px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .budget-approval-signature {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      padding: 10px;
+    }
+
+    .budget-approval-signature img {
+      max-width: 52%;
+      max-height: 52px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .request-toast {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 120;
+      min-width: 260px;
+      max-width: 420px;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .request-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .request-toast.success {
+      background: linear-gradient(135deg, #1f8f45 0%, #2e7d32 100%);
+    }
+
+    .request-toast.error {
+      background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%);
+    }
+
+    @media (max-width: 1200px) {
+      .dashboard-columns { grid-template-columns: 1fr; }
+      .panel-card { min-height: 0; }
+      .grid { grid-template-columns: 1fr; }
+      #pendingGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .setup-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      #pendingGrid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <h1>Budget Office Dashboard</h1>
+        <p>Municipality of Oslob - Purchase Request Approval</p>
+      </div>
+      <span class="badge" id="officerBadge">Budget Officer</span>
+    </div>
+
+    <div class="content">
+      <div id="dashboard">
+        <div class="card">
+          <div class="stats" id="statsBar"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Budget Office Signature And Stamp Setup</div>
+          <div class="setup-grid">
+            <div class="setup-box">
+              <label for="profileSignatureUpload" style="font-size:12px;font-weight:600;display:block;">Upload Budget Signature</label>
+              <input id="profileSignatureUpload" type="file" accept="image/*" style="width:100%;margin-top:6px;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;background:#fff;" />
+              <div class="actions" style="margin-top:8px;">
+                <button id="saveProfileSignatureBtn" class="btn btn-dark" type="button">Save Signature</button>
+              </div>
+              <div id="profileSignaturePreview" class="setup-preview">No saved signature</div>
+            </div>
+
+            <div class="setup-box">
+              <div id="profileStampPreview" class="setup-preview" style="text-align:center;padding:12px;">
+                <img src="images/stamp.png" alt="Budget Stamp" style="max-width:100%;max-height:120px;object-fit:contain;" />
+              </div>
+            </div>
+          </div>
+          <div id="profileStatus" class="status"></div>
+        </div>
+
+        <div class="dashboard-columns">
+          <div class="card panel-card">
+            <div class="section-title">Pending Requests</div>
+            <div class="grid" id="pendingGrid"></div>
+          </div>
+
+          <div class="card panel-card">
+            <div class="section-title">Approved / Rejected Requests</div>
+            <div class="filter-bar">
+              <button id="showAcceptedBtn" class="btn btn-light" type="button">View Accepted</button>
+              <button id="showRejectedBtn" class="btn btn-light" type="button">View Rejected</button>
+            </div>
+            <div class="processed-global-actions">
+              <button id="minimizeProcessedBtn" class="btn btn-light" type="button">Minimize</button>
+              <button id="expandProcessedBtn" class="btn btn-light" type="button">Expand</button>
+            </div>
+            <div id="processedPlaceholder" class="processed-placeholder">Select View Accepted or View Rejected to display processed requests.</div>
+            <div class="grid hidden" id="processedGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="approvalModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Approve Request</h3>
+        <button id="closeModalBtn" class="btn btn-light" type="button">Close</button>
+      </div>
+
+      <div id="requestInfo" class="req"></div>
+
+      <div>
+        <label for="approvalDate" style="font-size:12px;font-weight:600;">Date</label>
+        <input id="approvalDate" type="date" style="width:100%;margin-top:6px;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+
+      <div class="actions">
+        <button id="approveBtn" class="btn btn-green" type="button">Approve + Stamp</button>
+        <button id="rejectBtn" class="btn btn-red" type="button">Reject Request</button>
+      </div>
+
+      <div class="status" id="approvalStatus"></div>
+    </div>
+  </div>
+
+  <div id="budgetActionToast" class="request-toast" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
+    const STORAGE_BUDGET_PROFILE_KEY = "lguOslobBudgetOfficeProfile";
+    const API_BASE_URL = window.location.origin + "/api";
+    const dashboard = document.getElementById("dashboard");
+    const officerBadge = document.getElementById("officerBadge");
+
+    const statsBar = document.getElementById("statsBar");
+    const pendingGrid = document.getElementById("pendingGrid");
+    const processedGrid = document.getElementById("processedGrid");
+    const showAcceptedBtn = document.getElementById("showAcceptedBtn");
+    const showRejectedBtn = document.getElementById("showRejectedBtn");
+    const minimizeProcessedBtn = document.getElementById("minimizeProcessedBtn");
+    const expandProcessedBtn = document.getElementById("expandProcessedBtn");
+    const processedPlaceholder = document.getElementById("processedPlaceholder");
+
+    const approvalModal = document.getElementById("approvalModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const requestInfo = document.getElementById("requestInfo");
+    const approvalDate = document.getElementById("approvalDate");
+    const approveBtn = document.getElementById("approveBtn");
+    const rejectBtn = document.getElementById("rejectBtn");
+    const approvalStatus = document.getElementById("approvalStatus");
+    const profileSignatureUpload = document.getElementById("profileSignatureUpload");
+    const saveProfileSignatureBtn = document.getElementById("saveProfileSignatureBtn");
+    const profileSignaturePreview = document.getElementById("profileSignaturePreview");
+    const profileStampPreview = document.getElementById("profileStampPreview");
+    const profileStatus = document.getElementById("profileStatus");
+    const budgetActionToast = document.getElementById("budgetActionToast");
+
+    let currentRequestId = null;
+    let signatureData = "";
+    const STAMP_IMAGE_PATH = "images/stamp.png";  // Use static stamp from images folder
+    let activeStampData = STAMP_IMAGE_PATH;
+    let processedFilter = "none";
+    let budgetToastTimer = null;
+    let isServerSyncEnabled = false;
+
+    async function apiRequest(path, options) {
+      const response = await fetch(API_BASE_URL + path, options || {});
+      if (!response.ok) {
+        throw new Error("API error: " + response.status);
+      }
+      return response.json();
+    }
+
+    async function initializeServerSync() {
+      try {
+        await apiRequest("/health");
+        const state = await apiRequest("/state");
+        localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(Array.isArray(state.requests) ? state.requests : []));
+        localStorage.setItem(STORAGE_BUDGET_PROFILE_KEY, JSON.stringify(state.budgetProfile && typeof state.budgetProfile === "object" ? state.budgetProfile : {}));
+        isServerSyncEnabled = true;
+      } catch (error) {
+        isServerSyncEnabled = false;
+      }
+    }
+
+    function syncRequestsToServer(requests) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+      fetch(API_BASE_URL + "/requests", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requests: Array.isArray(requests) ? requests : [] })
+      }).catch(() => {
+        isServerSyncEnabled = false;
+      });
+    }
+
+    function syncBudgetProfileToServer(profile) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+      fetch(API_BASE_URL + "/budget-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile: profile && typeof profile === "object" ? profile : {} })
+      }).catch(() => {
+        isServerSyncEnabled = false;
+      });
+    }
+
+    function getRequests() {
+      const raw = localStorage.getItem(STORAGE_REQUESTS_KEY);
+      if (!raw) {
+        return [];
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveRequests(requests) {
+      localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(requests));
+      syncRequestsToServer(requests);
+    }
+
+    function getBudgetProfile() {
+      const raw = localStorage.getItem(STORAGE_BUDGET_PROFILE_KEY);
+      if (!raw) {
+        return { signatureData: "", stampData: "" };
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          signatureData: parsed.signatureData || "",
+          stampData: parsed.stampData || ""
+        };
+      } catch (error) {
+        return { signatureData: "", stampData: "" };
+      }
+    }
+
+    function saveBudgetProfile(profile) {
+      localStorage.setItem(STORAGE_BUDGET_PROFILE_KEY, JSON.stringify(profile));
+      syncBudgetProfileToServer(profile);
+    }
+
+    function updateBudgetProfileViews() {
+      const profile = getBudgetProfile();
+      if (profile.signatureData) {
+        profileSignaturePreview.innerHTML = '<img src="' + profile.signatureData + '" alt="Saved budget signature" />';
+      } else {
+        profileSignaturePreview.textContent = "No saved signature";
+      }
+      // Always show the static stamp from images folder
+      profileStampPreview.innerHTML = '<img src="' + STAMP_IMAGE_PATH + '" alt="Budget stamp" style="max-width:100%;max-height:120px;object-fit:contain;" />';
+    }
+
+    function renderStampPreview(stampData) {
+      // Stamp preview now handled in setup panel only
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function cleanDisplayText(value) {
+      let text = String(value == null ? "" : value);
+      const markers = [
+        "function printApprovedRequest(",
+        "function renderDashboard()",
+        "function openApprovalModal("
+      ];
+
+      let cutAt = text.length;
+      markers.forEach((marker) => {
+        const idx = text.indexOf(marker);
+        if (idx >= 0 && idx < cutAt) {
+          cutAt = idx;
+        }
+      });
+
+      if (cutAt < text.length) {
+        text = text.slice(0, cutAt);
+      }
+
+      text = text.replace(/^';\s*}\s*/i, "");
+      return text.trim();
+    }
+
+    function normalizeStatus(status) {
+      const value = cleanDisplayText(status).toLowerCase();
+      if (value.includes("approved")) return "approved";
+      if (value.includes("rejected")) return "rejected";
+      return "pending";
+    }
+
+    function formatStatusChip(status) {
+      const normalized = normalizeStatus(status);
+      const cls = normalized === "approved" ? "approved" : normalized === "rejected" ? "rejected" : "pending";
+      return '<span class="req-status ' + cls + '">' + normalized + '</span>';
+    }
+
+    function renderItems(items) {
+      if (!items || items.length === 0) {
+        return '<div class="items-box"><strong>Items:</strong> None</div>';
+      }
+
+      const itemRows = items.map((item) => {
+        const unit = escapeHtml(cleanDisplayText(item.unit || ""));
+        const description = escapeHtml(cleanDisplayText(item.description || "-"));
+        const unitCost = escapeHtml(cleanDisplayText(((item.unitCostValue > 0 ? formatAmount(item.unitCostValue) : '') || item.unitCost || item.unitCostFormatted || '-')));
+        const totalCost = escapeHtml(cleanDisplayText(((item.totalCostValue > 0 ? formatAmount(item.totalCostValue) : '') || item.totalCost || item.estimatedCost || item.totalCostFormatted || '-')));
+        return '<tr>'
+          + '<td>' + (item.quantity || '') + '</td>'
+          + '<td>' + unit + '</td>'
+          + '<td>' + description + '</td>'
+            + '<td>' + unitCost + '</td>'
+            + '<td>' + totalCost + '</td>'
+          + '</tr>';
+      }).join('');
+
+      return '<div class="items-box">'
+        + '<strong>Items:</strong>'
+        + '<table class="req-table">'
+        + '<thead><tr><th>Qty</th><th>Unit</th><th>Item Description</th><th>Unit Cost</th><th>Estimated Cost</th></tr></thead>'
+        + '<tbody>' + itemRows + '</tbody>'
+        + '</table>'
+        + '</div>';
+    }
+
+    function renderRequestSheet(request) {
+      const MAYOR_PRINTED_NAME = "ATTY. RONALD L. GUAREN";
+      const MAYOR_DESIGNATION = "Municipal Mayor";
+      const purpose = escapeHtml(cleanDisplayText(request.purpose || "-"));
+      const requestedBy = escapeHtml(cleanDisplayText(request.printedName || request.requestedBy || "-"));
+      const requestedDesignation = escapeHtml(cleanDisplayText(request.designation || request.officeCode || "-"));
+      const requestedSignature = request.requestedSignature || "";
+      const budgetSignature = request.budgetSignatureData || "";
+      const budgetStampData = request.budgetStampData || "";
+      const budgetStampText = escapeHtml(cleanDisplayText(request.budgetStamp || "BUDGET APPROVED"));
+      const isApproved = normalizeStatus(request.status) === "approved";
+      const requestedSignatureView = requestedSignature
+        ? '<img src="' + requestedSignature + '" alt="Requested signature" />'
+        : '';
+      const budgetSignatureView = budgetSignature
+        ? '<img src="' + budgetSignature + '" alt="Budget signature" />'
+        : '';
+      const budgetStampView = budgetStampData
+        ? '<img src="' + budgetStampData + '" alt="Approved stamp" />'
+        : budgetStampText;
+
+      return ''
+        + '<div class="sheet-banner"><div class="title">Purchase Request</div><div class="sub">OSLOB, CEBU</div><div class="lgu">LGU</div></div>'
+        + '<table class="sheet-meta">'
+        + '<tr><td class="label">Department:</td><td colspan="4">MAYOR\'S OFFICE</td></tr>'
+        + '<tr><td class="label">Section:</td><td colspan="4">' + escapeHtml(cleanDisplayText(request.section || request.officeCode || '-')) + '</td></tr>'
+        + '</table>'
+        + renderItems(request.items)
+        + '<div class="sheet-purpose"><strong>Purpose:</strong> ' + purpose + '</div>'
+        + '<table class="sheet-sign-table">'
+        + '<tr><th class="left-label"></th><th class="sheet-sign-title">Requested By:</th><th class="sheet-sign-title">Approved By:</th></tr>'
+        + '<tr><td class="left-label">Signature:</td><td><div class="sheet-signature-row">' + requestedSignatureView + '</div></td><td><div class="sheet-signature-row"></div></td></tr>'
+        + '<tr><td class="left-label">Printed Name:</td><td class="sheet-name-cell">' + requestedBy + '</td><td class="sheet-name-cell">' + MAYOR_PRINTED_NAME + '</td></tr>'
+        + '<tr><td class="left-label">Designation:</td><td class="sheet-designation-cell">' + requestedDesignation + '</td><td class="sheet-designation-cell">' + MAYOR_DESIGNATION + '</td></tr>'
+        + '</table>'
+        + '<div style="margin-top:8px;text-align:right;font-weight:700;">Grand Total: ' + escapeHtml(cleanDisplayText(request.grandTotalFormatted || '-')) + '</div>'
+        + (isApproved
+          ? '<div class="budget-approval-area">'
+            + '<div class="budget-approval-overlay">'
+            + '<div class="budget-approval-stamp">' + budgetStampView + '</div>'
+            + '<div class="budget-approval-signature">' + budgetSignatureView + '</div>'
+            + '</div>'
+            + '</div>'
+          : '');
+    }
+
+    function formatAmount(value) {
+      return "\u20b1 " + Number(value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function showBudgetActionToast(message, type) {
+      if (!budgetActionToast) {
+        return;
+      }
+      budgetActionToast.textContent = message;
+      budgetActionToast.className = "request-toast " + (type || "success") + " show";
+      if (budgetToastTimer) {
+        clearTimeout(budgetToastTimer);
+      }
+      budgetToastTimer = setTimeout(() => {
+        budgetActionToast.classList.remove("show");
+      }, 3200);
+    }
+
+    function setAllProcessedDetailsCollapsed(collapsed) {
+      processedGrid.querySelectorAll(".processed-request-details").forEach((panel) => {
+        panel.classList.toggle("hidden", collapsed);
+      });
+    }
+
+    function syncProcessedFilterButtons() {
+      showAcceptedBtn.classList.toggle("filter-btn-active", processedFilter === "approved");
+      showRejectedBtn.classList.toggle("filter-btn-active", processedFilter === "rejected");
+    }
+
+    function renderStats(requests) {
+      const pending = requests.filter(r => normalizeStatus(r.status) === "pending").length;
+      const approved = requests.filter(r => normalizeStatus(r.status) === "approved").length;
+      const rejected = requests.filter(r => normalizeStatus(r.status) === "rejected").length;
+
+      statsBar.innerHTML = ''
+        + '<div class="stat"><div class="num">' + pending + '</div><div class="label">Pending</div></div>'
+        + '<div class="stat"><div class="num">' + approved + '</div><div class="label">Approved</div></div>'
+        + '<div class="stat"><div class="num">' + rejected + '</div><div class="label">Rejected</div></div>';
+    }
+
+    function renderPending(requests) {
+      const rows = requests.filter(r => normalizeStatus(r.status) === "pending");
+      if (rows.length === 0) {
+        pendingGrid.innerHTML = '<div class="empty">No pending requests.</div>';
+        return;
+      }
+
+      pendingGrid.innerHTML = rows
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .map((r) => {
+          const requestToken = encodeURIComponent(String(r.id || ""));
+          return '<div class="req">'
+            + '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(r.id)) + '<br />'
+            + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(r.officeName)) + ' (' + escapeHtml(cleanDisplayText(r.officeCode)) + ')<br />'
+            + '<strong>Submitted:</strong> ' + escapeHtml(cleanDisplayText(r.timestamp || '-')) + '<br />'
+            + '<strong>Status:</strong> ' + formatStatusChip(r.status)
+            + '<div class="actions" style="margin-top:10px;">'
+            + '<button class="btn btn-dark js-review-request" type="button" data-request-token="' + requestToken + '">Review</button>'
+            + '</div>'
+            + '</div>';
+        })
+        .join('');
+
+      pendingGrid.querySelectorAll('.js-review-request').forEach((button) => {
+        button.addEventListener('click', () => {
+          const token = button.getAttribute('data-request-token') || '';
+          openApprovalModal(decodeURIComponent(token));
+        });
+      });
+    }
+
+    function renderProcessed(requests) {
+      if (processedFilter === "none") {
+        processedGrid.classList.add("hidden");
+        processedPlaceholder.classList.remove("hidden");
+        syncProcessedFilterButtons();
+        return;
+      }
+
+      let rows = requests.filter(r => {
+        const status = normalizeStatus(r.status);
+        return status === "approved" || status === "rejected";
+      });
+      if (processedFilter === "approved") {
+        rows = rows.filter((request) => normalizeStatus(request.status) === "approved");
+      } else if (processedFilter === "rejected") {
+        rows = rows.filter((request) => normalizeStatus(request.status) === "rejected");
+      }
+
+      syncProcessedFilterButtons();
+      processedGrid.classList.remove("hidden");
+      processedPlaceholder.classList.add("hidden");
+
+      if (rows.length === 0) {
+        processedGrid.innerHTML = '<div class="empty">No processed requests yet.</div>';
+        return;
+      }
+
+      processedGrid.innerHTML = rows
+        .sort((a, b) => new Date(b.budgetDecisionDate || b.timestamp) - new Date(a.budgetDecisionDate || a.timestamp))
+        .map((r) => {
+          const normalizedStatus = normalizeStatus(r.status);
+          const who = escapeHtml(cleanDisplayText(r.budgetOfficer || '-'));
+          const when = escapeHtml(cleanDisplayText(r.budgetDecisionDate || '-'));
+          const requestToken = encodeURIComponent(String(r.id || ""));
+          return '<div class="req">'
+            + '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(r.id)) + '<br />'
+            + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(r.officeName)) + ' (' + escapeHtml(cleanDisplayText(r.officeCode)) + ')<br />'
+            + '<strong>Status:</strong> ' + formatStatusChip(r.status) + '<br />'
+            + '<strong>Processed By:</strong> ' + who + '<br />'
+            + '<strong>Processed Date:</strong> ' + when + '<br />'
+            + '<div class="processed-request-details">' + renderRequestSheet(r) + '</div>'
+            + '<div class="actions" style="margin-top:10px;">'
+            + (normalizedStatus === "approved"
+              ? '<button class="btn btn-dark js-print-processed" type="button" data-request-token="' + requestToken + '">Print</button>'
+              : '')
+            + '<button class="btn btn-red js-delete-processed" type="button" data-request-token="' + requestToken + '">Delete</button>'
+            + '</div>'
+            + '</div>';
+        })
+        .join('');
+
+      processedGrid.querySelectorAll('.js-print-processed').forEach((button) => {
+        button.addEventListener('click', () => {
+          const token = button.getAttribute('data-request-token') || '';
+          openPrintPage(decodeURIComponent(token));
+        });
+      });
+
+      processedGrid.querySelectorAll('.js-delete-processed').forEach((button) => {
+        button.addEventListener('click', () => {
+          const token = button.getAttribute('data-request-token') || '';
+          deleteProcessedRequest(decodeURIComponent(token));
+        });
+      });
+    }
+
+    function deleteProcessedRequest(requestId) {
+      const requests = getRequests();
+      const target = requests.find((r) => r.id === requestId);
+      if (!target) {
+        return;
+      }
+
+      if (!(normalizeStatus(target.status) === "approved" || normalizeStatus(target.status) === "rejected")) {
+        return;
+      }
+
+      const ok = window.confirm("Delete this processed request? This cannot be undone.");
+      if (!ok) {
+        return;
+      }
+
+      const filtered = requests.filter((r) => r.id !== requestId);
+      saveRequests(filtered);
+      renderDashboard();
+    }
+
+    function openPrintPage(requestId) {
+      const request = getRequests().find((r) => r.id === requestId);
+      if (!request || normalizeStatus(request.status) !== "approved") {
+        return;
+      }
+
+      const url = "Budget_Request_Print.html?requestId=" + encodeURIComponent(requestId);
+      window.open(url, "_blank");
+    }
+
+    function renderDashboard() {
+      const requests = getRequests();
+      renderStats(requests);
+      renderPending(requests);
+      renderProcessed(requests);
+    }
+
+    function openApprovalModal(requestId) {
+      currentRequestId = requestId;
+      const profile = getBudgetProfile();
+      signatureData = profile.signatureData || "";
+      activeStampData = STAMP_IMAGE_PATH;  // Always use the static stamp image
+      approvalStatus.textContent = "";
+      approvalDate.valueAsDate = new Date();
+
+      const request = getRequests().find(r => r.id === requestId);
+      if (!request) return;
+
+      requestInfo.innerHTML = ''
+        + '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(request.id)) + '<br />'
+        + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(request.officeName)) + ' (' + escapeHtml(cleanDisplayText(request.officeCode)) + ')<br />'
+        + '<strong>Submitted:</strong> ' + escapeHtml(cleanDisplayText(request.timestamp || '-'))
+        + renderRequestSheet(request);
+
+      approvalModal.classList.remove("hidden");
+    }
+
+    function closeApprovalModal() {
+      approvalModal.classList.add("hidden");
+      currentRequestId = null;
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Unable to load image."));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error("Unable to read image file."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function trimTransparentBounds(ctx, width, height) {
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const pixels = imgData.data;
+      let minX = width;
+      let minY = height;
+      let maxX = -1;
+      let maxY = -1;
+
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+          const idx = (y * width + x) * 4;
+          if (pixels[idx + 3] > 0) {
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+
+      if (maxX < minX || maxY < minY) {
+        return null;
+      }
+
+      return {
+        x: minX,
+        y: minY,
+        width: maxX - minX + 1,
+        height: maxY - minY + 1
+      };
+    }
+
+    async function createTransparentImageFromUpload(file) {
+      const sourceImg = await loadImageFromFile(file);
+      const maxWidth = 900;
+      const scale = sourceImg.width > maxWidth ? maxWidth / sourceImg.width : 1;
+      const width = Math.max(1, Math.round(sourceImg.width * scale));
+      const height = Math.max(1, Math.round(sourceImg.height * scale));
+
+      const workCanvas = document.createElement("canvas");
+      workCanvas.width = width;
+      workCanvas.height = height;
+      const workCtx = workCanvas.getContext("2d");
+      workCtx.drawImage(sourceImg, 0, 0, width, height);
+
+      const imageData = workCtx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        const sat = max === 0 ? 0 : (max - min) / max;
+
+        if (lum > 245 && sat < 0.18) {
+          data[i + 3] = 0;
+          continue;
+        }
+
+        let alpha = (235 - lum) * 3.2 + sat * 35;
+        if (alpha < 18) {
+          alpha = 0;
+        } else if (alpha > 255) {
+          alpha = 255;
+        }
+
+        data[i] = 20;
+        data[i + 1] = 20;
+        data[i + 2] = 20;
+        data[i + 3] = alpha;
+      }
+
+      workCtx.putImageData(imageData, 0, 0);
+      const bounds = trimTransparentBounds(workCtx, width, height);
+      if (!bounds) {
+        throw new Error("No image content detected.");
+      }
+
+      const pad = 4;
+      const outCanvas = document.createElement("canvas");
+      outCanvas.width = bounds.width + pad * 2;
+      outCanvas.height = bounds.height + pad * 2;
+      const outCtx = outCanvas.getContext("2d");
+      outCtx.drawImage(
+        workCanvas,
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        pad,
+        pad,
+        bounds.width,
+        bounds.height
+      );
+
+      return outCanvas.toDataURL("image/png");
+    }
+
+    function createTransparentSignatureFromUpload(file) {
+      return createTransparentImageFromUpload(file);
+    }
+
+    function createTransparentStampFromUpload(file) {
+      return createTransparentImageFromUpload(file);
+    }
+
+    async function saveProfileSignature() {
+      const file = profileSignatureUpload ? profileSignatureUpload.files[0] : null;
+      if (!file) {
+        profileStatus.textContent = "Select a signature image first.";
+        return;
+      }
+
+      if (!file.type || !file.type.startsWith("image/")) {
+        profileStatus.textContent = "Please upload a valid signature image file.";
+        return;
+      }
+
+      profileStatus.textContent = "Processing signature image...";
+      try {
+        const signature = await createTransparentSignatureFromUpload(file);
+        const profile = getBudgetProfile();
+        profile.signatureData = signature;
+        saveBudgetProfile(profile);
+        profileSignatureUpload.value = "";
+        updateBudgetProfileViews();
+        profileStatus.textContent = "Budget signature saved with transparent background.";
+      } catch (error) {
+        profileStatus.textContent = "Could not process signature image. Use a clearer image.";
+      }
+    }
+
+
+
+    function processRequest(newStatus) {
+      if (!currentRequestId) return;
+      if (!approvalDate.value) {
+        approvalStatus.textContent = "Please select a date.";
+        return;
+      }
+      if (newStatus === "approved" && !signatureData) {
+        approvalStatus.textContent = "Save your signature before approval.";
+        return;
+      }
+
+      const requests = getRequests();
+      const idx = requests.findIndex(r => r.id === currentRequestId);
+      if (idx < 0) {
+        approvalStatus.textContent = "Request not found.";
+        return;
+      }
+
+      const officer = "Budget Officer";
+      const stamp = newStatus === "approved" ? "BUDGET APPROVED" : "BUDGET REJECTED";
+
+      requests[idx].status = newStatus;
+      requests[idx].officeStatus = newStatus === "approved" ? "for_mayor" : "rejected_budget";
+      requests[idx].budgetOfficer = officer;
+      requests[idx].budgetDecisionDate = approvalDate.value;
+      requests[idx].budgetStamp = stamp;
+      requests[idx].budgetStampData = newStatus === "approved" ? activeStampData : "";
+      requests[idx].budgetSignatureData = newStatus === "approved" ? signatureData : "";
+
+      saveRequests(requests);
+      approvalStatus.textContent = newStatus === "approved" ? "Request approved and stamped." : "Request rejected.";
+      showBudgetActionToast(
+        newStatus === "approved" ? "Request Approved Successfully." : "Request Declined Successfully.",
+        newStatus === "approved" ? "success" : "error"
+      );
+
+      setTimeout(() => {
+        closeApprovalModal();
+        renderDashboard();
+      }, 700);
+    }
+
+    async function boot() {
+      await initializeServerSync();
+      officerBadge.textContent = "BUDGET OFFICER";
+      dashboard.classList.remove("hidden");
+      updateBudgetProfileViews();
+      renderDashboard();
+    }
+
+    closeModalBtn.addEventListener("click", closeApprovalModal);
+    saveProfileSignatureBtn.addEventListener("click", saveProfileSignature);
+    approveBtn.addEventListener("click", () => processRequest("approved"));
+    rejectBtn.addEventListener("click", () => processRequest("rejected"));
+    showAcceptedBtn.addEventListener("click", () => {
+      processedFilter = processedFilter === "approved" ? "none" : "approved";
+      renderDashboard();
+    });
+    showRejectedBtn.addEventListener("click", () => {
+      processedFilter = processedFilter === "rejected" ? "none" : "rejected";
+      renderDashboard();
+    });
+    minimizeProcessedBtn.addEventListener("click", () => {
+      setAllProcessedDetailsCollapsed(true);
+    });
+    expandProcessedBtn.addEventListener("click", () => {
+      setAllProcessedDetailsCollapsed(false);
+    });
+
+    approvalModal.addEventListener("click", (evt) => {
+      if (evt.target === approvalModal) {
+        closeApprovalModal();
+      }
+    });
+
+    boot();
+
+    window.openApprovalModal = openApprovalModal;
+  </script>
+</body>
+</html>

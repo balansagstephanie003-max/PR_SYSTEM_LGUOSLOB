@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GSO Dashboard - LGU Oslob</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-1: #7b7b7b;
+      --bg-2: #4e4e4e;
+      --bg-3: #222;
+      --panel: #ffffff;
+      --ink: #1f1f1f;
+      --muted: #666;
+      --line: #d8d8d8;
+      --gso-dark:   #0d3b0d;
+      --gso-mid:    #1a6b1a;
+      --gso-light:  #4caf50;
+      --pending:    #ff9800;
+      --b-approved: #1565c0;
+      --m-approved: #7b1c1c;
+      --received:   #0277bd;
+      --processing: #e65100;
+      --completed:  #1b5e20;
+      --rejected:   #c62828;
+    }
+
+    body {
+      font-family: "Inter", "Segoe UI", sans-serif;
+      min-height: 100vh;
+      color: var(--ink);
+      background: radial-gradient(ellipse at top, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+    }
+
+    .app { min-height: 100vh; display: flex; flex-direction: column; gap: 14px; padding: 14px; }
+
+    .topbar {
+      background: linear-gradient(160deg, var(--gso-dark) 0%, var(--gso-mid) 55%, var(--gso-dark) 100%);
+      border: 1px solid #66bb6a;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+    .topbar-logo {
+      width: 54px; height: 54px; object-fit: contain; border-radius: 50%;
+      background: #fff; padding: 3px;
+      box-shadow: inset 0 0 0 2px #66bb6a, 0 2px 6px rgba(0,0,0,0.4);
+      flex: 0 0 auto;
+    }
+
+    .topbar-text { color: #fff; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
+    .topbar-text h1 { font-family: "Playfair Display", serif; font-size: 20px; letter-spacing: 0.4px; text-transform: uppercase; }
+    .topbar-text p { font-size: 12px; color: #c8e6c9; }
+
+    .badge {
+      background: #c8e6c9; color: var(--gso-dark);
+      font-weight: 700; font-size: 11px; border-radius: 999px;
+      padding: 5px 12px; text-transform: uppercase; letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .content { width: min(1560px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+    .card {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 16px;
+    }
+
+    .btn { border: none; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: "Inter", "Segoe UI", sans-serif; }
+    .btn-gso    { background: var(--gso-dark); color: #fff; }
+    .btn-gso:hover { background: #072207; }
+    .btn-light  { background: #efefef; color: #111; border: 1px solid #cfcfcf; }
+    .btn-light:hover { background: #e7e7e7; }
+    .btn-save   { background: #1b5e20; color: #fff; }
+    .btn-save:hover { background: #0d3b0d; }
+    .btn-close  { background: #616161; color: #fff; }
+    .btn-close:hover { background: #424242; }
+
+    .stats { display: grid; grid-template-columns: repeat(6, minmax(100px, 1fr)); gap: 10px; }
+    .stat { border-radius: 10px; padding: 12px 14px; color: #fff; }
+    .stat-total      { background: #37474f; }
+    .stat-pending    { background: #e65100; }
+    .stat-budg       { background: #1565c0; }
+    .stat-mayor      { background: #7b1c1c; }
+    .stat-processing { background: #00695c; }
+    .stat-completed  { background: var(--gso-dark); }
+    .stat .num   { font-family: "Playfair Display", serif; font-size: 24px; line-height: 1; margin-bottom: 4px; }
+    .stat .label { font-size: 10px; color: rgba(255,255,255,0.82); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    .section-title { font-family: "Playfair Display", serif; font-size: 18px; margin-bottom: 12px; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn-active { background: var(--gso-dark) !important; color: #fff !important; border-color: var(--gso-dark) !important; }
+
+    /* Cards grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 14px; }
+
+    .req {
+      border: 1px solid #d8d8d8;
+      border-left: 4px solid var(--gso-mid);
+      border-radius: 10px; padding: 16px;
+      background: #fff; font-size: 13.5px; line-height: 1.65;
+    }
+    .req.gso-received   { border-left-color: var(--received); }
+    .req.gso-processing { border-left-color: var(--processing); }
+    .req.gso-completed  { border-left-color: var(--completed); }
+    .req.gso-pending    { border-left-color: #bbb; }
+    .req strong { color: var(--ink); }
+
+    .status-chip {
+      display: inline-block; padding: 2px 9px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; margin-left: 4px;
+    }
+    .chip-pending    { background: #fff3e0; color: #e65100; }
+    .chip-approved   { background: #e3f2fd; color: #1565c0; }
+    .chip-rejected   { background: #ffebee; color: #c62828; }
+    .chip-mayor      { background: #fce4ec; color: #7b1c1c; }
+    .chip-received   { background: #e1f5fe; color: #0277bd; }
+    .chip-processing { background: #fff3e0; color: #e65100; }
+    .chip-completed  { background: #e8f5e9; color: #1b5e20; }
+    .chip-none       { background: #f5f5f5; color: #616161; }
+
+    .empty {
+      border: 1px dashed #bbb; border-radius: 10px; padding: 26px;
+      text-align: center; color: #666; font-size: 14px; background: #fafafa;
+    }
+    .hidden { display: none !important; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; z-index: 50;
+    }
+    .modal {
+      width: min(700px, 100%); max-height: 92vh; overflow: auto;
+      background: #fff; border-radius: 12px; border: 1px solid #d8d8d8;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.28); padding: 0;
+      display: flex; flex-direction: column;
+    }
+    .modal-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px;
+      background: linear-gradient(160deg, var(--gso-dark) 0%, var(--gso-mid) 100%);
+      color: #fff; border-radius: 12px 12px 0 0;
+    }
+    .modal-head h3 { font-family: "Playfair Display", serif; font-size: 20px; }
+    .modal-head .close-x {
+      border: none; background: transparent; color: #fff;
+      font-size: 22px; line-height: 1; cursor: pointer;
+    }
+    .modal-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+    .info-box { background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; font-size: 13px; line-height: 1.65; }
+
+    .field-row { display: flex; flex-direction: column; gap: 5px; }
+    .field-row label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #555; }
+    .field-row select, .field-row input, .field-row textarea {
+      border: 1.5px solid #cfcfcf; border-radius: 7px; padding: 9px 10px;
+      font-size: 13px; font-family: "Inter", "Segoe UI", sans-serif; outline: none;
+      color: #222;
+    }
+    .field-row select:focus, .field-row input:focus, .field-row textarea:focus {
+      border-color: var(--gso-mid); box-shadow: 0 0 0 2px rgba(26,107,26,0.12);
+    }
+    .field-row textarea { min-height: 72px; resize: vertical; }
+
+    .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .status-msg { min-height: 18px; font-size: 12px; color: #555; }
+
+    /* PR detail inside modal */
+    .items-box { margin-top: 8px; border: 1px dashed #c7c7c7; border-radius: 8px; padding: 8px; background: #fafafa; }
+    .req-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+    .req-table th, .req-table td { border: 1px solid #cfcfcf; padding: 5px 6px; text-align: left; vertical-align: top; }
+    .req-table th { background: #f2f2f2; font-size: 11px; text-transform: uppercase; font-weight: 700; }
+
+    .sheet-banner {
+      margin-top: 8px; margin-bottom: 8px;
+      border: 1px solid var(--gso-dark); border-radius: 6px;
+      background: linear-gradient(160deg, var(--gso-dark) 0%, var(--gso-mid) 55%, var(--gso-dark) 100%);
+      color: #fff; text-align: center; padding: 8px 8px 10px;
+    }
+    .sheet-banner .title { font-family: "Playfair Display", serif; font-size: 22px; text-transform: uppercase; letter-spacing: 0.6px; line-height: 1.1; }
+    .sheet-banner .sub   { font-size: 13px; letter-spacing: 0.8px; margin-top: 2px; opacity: 0.9; }
+    .sheet-banner .lgu   { font-size: 30px; font-weight: 700; line-height: 1; opacity: 0.15; letter-spacing: 4px; margin-top: -4px; }
+
+    .sheet-meta { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+    .sheet-meta td { border: 1px solid #cfcfcf; padding: 5px 6px; }
+    .sheet-meta .lbl { width: 120px; background: linear-gradient(90deg, var(--gso-dark) 0%, var(--gso-mid) 100%); color: #fff; font-weight: 700; }
+
+    .sheet-purpose { margin-top: 6px; border: 1px solid #cfcfcf; border-radius: 4px; background: #f8f8f8; padding: 7px; min-height: 40px; white-space: pre-wrap; font-size: 12px; }
+
+    .sheet-sign-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+    .sheet-sign-table th, .sheet-sign-table td { border: 1px solid #cfcfcf; padding: 6px; vertical-align: middle; }
+    .sheet-sign-table .left-label { width: 120px; background: linear-gradient(90deg, var(--gso-dark) 0%, var(--gso-mid) 100%); color: #fff; font-weight: 700; white-space: nowrap; }
+    .sheet-sign-title  { background: #e8f5e9; text-align: center; font-weight: 700; text-transform: uppercase; }
+    .sheet-name-cell   { text-align: center; font-weight: 700; text-transform: uppercase; }
+    .sheet-desig-cell  { text-align: center; font-style: italic; font-weight: 700; }
+    .sheet-sig-row     { margin-top: 4px; border: 1px dashed #c8c8c8; border-radius: 4px; background: #fafafa; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 4px; }
+    .sheet-sig-row img { max-width: 100%; max-height: 36px; object-fit: contain; display: block; }
+
+    .budget-approval-area { margin-top: 8px; display: flex; justify-content: center; }
+    .budget-approval-overlay { position: relative; width: min(440px, 100%); min-height: 130px; border: none; background: transparent; overflow: hidden; }
+    .budget-approval-stamp   { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 10px; z-index: 1; }
+    .budget-approval-stamp img { max-width: 92%; max-height: 110px; object-fit: contain; display: block; }
+    .budget-approval-sig     { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2; padding: 10px; }
+    .budget-approval-sig img { max-width: 52%; max-height: 52px; object-fit: contain; display: block; }
+
+    @media (max-width: 1200px) { .stats { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 900px)  { .stats { grid-template-columns: repeat(2, 1fr); } .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px)  { .stats { grid-template-columns: 1fr; } .topbar { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="topbar-left">
+        <img src="images/OSLOB SEAL.png" alt="LGU Oslob Seal" class="topbar-logo" />
+        <div class="topbar-text">
+          <h1>GSO Dashboard</h1>
+          <p>General Services Office &mdash; Procurement Tracking</p>
+        </div>
+      </div>
+      <span class="badge">General Services Office</span>
+    </div>
+
+    <div class="content">
+      <!-- Stats bar -->
+      <div class="card">
+        <div class="stats" id="statsBar"></div>
+      </div>
+
+      <!-- Filter + Grid -->
+      <div class="card">
+        <div class="section-title">Purchase Requests</div>
+        <div class="filter-bar" id="filterBar" style="margin-bottom:14px;">
+          <button class="btn btn-light js-filter filter-btn-active" data-filter="all"        type="button">All</button>
+          <button class="btn btn-light js-filter" data-filter="queue"       type="button">Awaiting GSO Action</button>
+          <button class="btn btn-light js-filter" data-filter="gso"         type="button">GSO Processing</button>
+          <button class="btn btn-light js-filter" data-filter="completed"   type="button">GSO Completed</button>
+        </div>
+        <div class="grid" id="requestsGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GSO Action Modal -->
+  <div id="actionModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Update GSO Status</h3>
+        <button id="closeActionModalBtn" class="close-x" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Request info summary -->
+        <div id="modalRequestInfo" class="info-box"></div>
+
+        <!-- PR Details (items, purpose, signatures) -->
+        <div id="modalPRDetails"></div>
+
+        <hr style="border:none;border-top:1px solid #e0e0e0;" />
+
+        <!-- GSO Status Update -->
+        <div class="field-row">
+          <label for="gsoStatusSelect">GSO Status</label>
+          <select id="gsoStatusSelect">
+            <option value="">— No GSO action yet —</option>
+            <option value="received">Received by GSO</option>
+            <option value="processing">In Processing / Procurement</option>
+            <option value="completed">Completed / Delivered</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="gsoDateInput">Date</label>
+          <input id="gsoDateInput" type="date" />
+        </div>
+
+        <div class="field-row">
+          <label for="gsoNotesInput">Notes / Remarks</label>
+          <textarea id="gsoNotesInput" placeholder="Add procurement notes or remarks here..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button id="printGSORequestBtn" class="btn btn-light" type="button">Print</button>
+          <button id="cancelActionBtn" class="btn btn-close" type="button">Cancel</button>
+          <button id="saveGSOStatusBtn" class="btn btn-save" type="button">&#10003;&nbsp; Save GSO Status</button>
+        </div>
+
+        <div id="modalStatus" class="status-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
+    const API_BASE_URL         = window.location.origin + "/api";
+    const STAMP_IMAGE_PATH     = "images/stamp.png";
+
+    const statsBar          = document.getElementById("statsBar");
+    const requestsGrid      = document.getElementById("requestsGrid");
+    const actionModal       = document.getElementById("actionModal");
+    const closeActionBtn    = document.getElementById("closeActionModalBtn");
+    const cancelActionBtn   = document.getElementById("cancelActionBtn");
+    const printGSORequestBtn = document.getElementById("printGSORequestBtn");
+    const saveGSOStatusBtn  = document.getElementById("saveGSOStatusBtn");
+    const gsoStatusSelect   = document.getElementById("gsoStatusSelect");
+    const gsoDateInput      = document.getElementById("gsoDateInput");
+    const gsoNotesInput     = document.getElementById("gsoNotesInput");
+    const modalRequestInfo  = document.getElementById("modalRequestInfo");
+    const modalPRDetails    = document.getElementById("modalPRDetails");
+    const modalStatus       = document.getElementById("modalStatus");
+
+    let currentFilter    = "all";
+    let currentRequestId = null;
+    let isServerSyncEnabled = false;
+
+    async function apiRequest(path, options) {
+      const response = await fetch(API_BASE_URL + path, options || {});
+      if (!response.ok) {
+        throw new Error("API error: " + response.status);
+      }
+      return response.json();
+    }
+
+    async function initializeServerSync() {
+      try {
+        await apiRequest("/health");
+        const state = await apiRequest("/state");
+        localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(Array.isArray(state.requests) ? state.requests : []));
+        isServerSyncEnabled = true;
+      } catch (error) {
+        isServerSyncEnabled = false;
+      }
+    }
+
+    function syncRequestsToServer(requests) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+      fetch(API_BASE_URL + "/requests", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requests: Array.isArray(requests) ? requests : [] })
+      }).catch(() => {
+        isServerSyncEnabled = false;
+      });
+    }
+
+    /* ── Storage helpers ── */
+    function getRequests() {
+      try {
+        const raw = localStorage.getItem(STORAGE_REQUESTS_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) { return []; }
+    }
+
+    function saveRequests(requests) {
+      localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(requests));
+      syncRequestsToServer(requests);
+    }
+
+    /* ── Helpers ── */
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function cleanDisplayText(value) {
+      let text = String(value == null ? "" : value);
+      const markers = [
+        "function printApprovedRequest(",
+        "function renderDashboard(",
+        "function openApprovalModal("
+      ];
+      let cutAt = text.length;
+      markers.forEach((m) => {
+        const idx = text.indexOf(m);
+        if (idx >= 0 && idx < cutAt) cutAt = idx;
+      });
+      if (cutAt < text.length) text = text.slice(0, cutAt);
+      text = text.replace(/^';\s*}\s*/i, "");
+      return text.trim();
+    }
+
+    function normalizeStatus(status) {
+      const v = cleanDisplayText(status).toLowerCase();
+      if (v.includes("approved")) return "approved";
+      if (v.includes("rejected")) return "rejected";
+      return "pending";
+    }
+
+    function formatAmount(value) {
+      return "\u20b1\u00a0" + Number(value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    /* ── Status chip HTML ── */
+    function budgetChip(r) {
+      const s = normalizeStatus(r.status);
+      if (s === "approved")  return '<span class="status-chip chip-approved">Budget Approved</span>';
+      if (s === "rejected")  return '<span class="status-chip chip-rejected">Rejected</span>';
+      return '<span class="status-chip chip-pending">Pending Budget</span>';
+    }
+
+    function mayorChip(r) {
+      if (r.mayorStatus === "mayor_approved") return '<span class="status-chip chip-mayor">Mayor Signed</span>';
+      if (r.mayorStatus === "mayor_declined") return '<span class="status-chip chip-rejected">Mayor Declined</span>';
+      return "";
+    }
+
+    function gsoChip(r) {
+      if (r.gsoStatus === "completed")  return '<span class="status-chip chip-completed">GSO Completed</span>';
+      if (r.gsoStatus === "processing") return '<span class="status-chip chip-processing">GSO Processing</span>';
+      if (r.gsoStatus === "received")   return '<span class="status-chip chip-received">GSO Received</span>';
+      return "";
+    }
+
+    /* ── Card left-border class ── */
+    function cardClass(r) {
+      if (r.gsoStatus === "completed")  return "gso-completed";
+      if (r.gsoStatus === "processing" || r.gsoStatus === "received") return "gso-processing";
+      if (r.mayorStatus === "mayor_approved") return "gso-pending"; /* ready for GSO, no action yet */
+      if (normalizeStatus(r.status) === "rejected" || r.mayorStatus === "mayor_declined") return "gso-pending";
+      return "";
+    }
+
+    /* ── Filter requests ── */
+    function applyFilter(requests, filter) {
+      const gsoVisible = requests.filter((r) => r.mayorStatus === "mayor_approved");
+      switch (filter) {
+        case "queue":
+          return gsoVisible.filter(r => !r.gsoStatus);
+        case "gso":
+          return gsoVisible.filter(r => r.gsoStatus === "received" || r.gsoStatus === "processing");
+        case "completed":
+          return gsoVisible.filter(r => r.gsoStatus === "completed");
+        default: /* "all" */
+          return gsoVisible;
+      }
+    }
+
+    /* ── Items table ── */
+    function renderItems(items) {
+      if (!items || items.length === 0) return '<div class="items-box"><strong>Items:</strong> None</div>';
+      const rows = items.map((item) => {
+        const unit    = escapeHtml(cleanDisplayText(item.unit || ""));
+        const desc    = escapeHtml(cleanDisplayText(item.description || "-"));
+        const uCost   = escapeHtml(cleanDisplayText((item.unitCostValue > 0 ? formatAmount(item.unitCostValue) : "") || item.unitCost || "-"));
+        const totCost = escapeHtml(cleanDisplayText((item.totalCostValue > 0 ? formatAmount(item.totalCostValue) : "") || item.totalCost || "-"));
+        return "<tr><td>" + (item.quantity || "") + "</td><td>" + unit + "</td><td>" + desc + "</td><td>" + uCost + "</td><td>" + totCost + "</td></tr>";
+      }).join("");
+      return '<div class="items-box"><strong>Items:</strong>'
+        + '<table class="req-table"><thead><tr><th>Qty</th><th>Unit</th><th>Description</th><th>Unit Cost</th><th>Est. Cost</th></tr></thead>'
+        + "<tbody>" + rows + "</tbody></table></div>";
+    }
+
+    /* ── Full PR sheet for modal detail ── */
+    function renderPRDetail(request) {
+      const MAYOR_NAME  = "ATTY. RONALD L. GUAREN";
+      const MAYOR_POS   = "Municipal Mayor";
+      const purpose    = escapeHtml(cleanDisplayText(request.purpose || "-"));
+      const reqBy      = escapeHtml(cleanDisplayText(request.printedName || request.requestedBy || "-"));
+      const reqDesig   = escapeHtml(cleanDisplayText(request.designation || request.officeCode || "-"));
+      const reqSig     = request.requestedSignature || "";
+      const budgetSig  = request.budgetSignatureData || "";
+      const budgetStamp = request.budgetStampData || STAMP_IMAGE_PATH;
+      const mayorSig   = request.mayorStatus === "mayor_approved" ? (request.mayorSignatureData || "") : "";
+      const sectionText = escapeHtml(cleanDisplayText(request.section || request.officeCode || "-"));
+      const grandTotal  = escapeHtml(cleanDisplayText(request.grandTotalFormatted || "-"));
+
+      const reqSigView   = reqSig    ? '<img src="' + reqSig    + '" alt="Requester signature" />' : "";
+      const mayorSigView = mayorSig  ? '<img src="' + mayorSig  + '" alt="Mayor signature" />'     : "";
+      const budgSigView  = budgetSig ? '<img src="' + budgetSig + '" alt="Budget signature" />'    : "";
+      const budgStampView = '<img src="' + budgetStamp + '" alt="Budget stamp" />';
+      const isApproved = normalizeStatus(request.status) === "approved";
+
+      return '<div class="sheet-banner"><div class="title">Purchase Request</div><div class="sub">OSLOB, CEBU</div><div class="lgu">LGU</div></div>'
+        + '<table class="sheet-meta">'
+        + '<tr><td class="lbl">Department:</td><td colspan="4">MAYOR\'S OFFICE</td></tr>'
+        + '<tr><td class="lbl">Section:</td><td colspan="4">' + sectionText + '</td></tr>'
+        + '</table>'
+        + renderItems(request.items)
+        + '<div class="sheet-purpose"><strong>Purpose:</strong> ' + purpose + '</div>'
+        + '<table class="sheet-sign-table">'
+        + '<tr><th class="left-label"></th><th class="sheet-sign-title">Requested By:</th><th class="sheet-sign-title">Approved By:</th></tr>'
+        + '<tr><td class="left-label">Signature:</td>'
+        + '<td><div class="sheet-sig-row">' + reqSigView + '</div></td>'
+        + '<td><div class="sheet-sig-row">' + mayorSigView + '</div></td>'
+        + '</tr>'
+        + '<tr><td class="left-label">Printed Name:</td><td class="sheet-name-cell">' + reqBy + '</td><td class="sheet-name-cell">' + MAYOR_NAME + '</td></tr>'
+        + '<tr><td class="left-label">Designation:</td><td class="sheet-desig-cell">' + reqDesig + '</td><td class="sheet-desig-cell">' + MAYOR_POS + '</td></tr>'
+        + '</table>'
+        + '<div style="margin-top:8px;text-align:right;font-weight:700;font-size:13px;">Grand Total: ' + grandTotal + '</div>'
+        + (isApproved
+          ? '<div class="budget-approval-area">'
+            + '<div class="budget-approval-overlay">'
+            + '<div class="budget-approval-stamp">' + budgStampView + '</div>'
+            + '<div class="budget-approval-sig">' + budgSigView + '</div>'
+            + '</div></div>'
+          : '');
+    }
+
+    /* ── Stats bar ── */
+    function renderStats(requests) {
+      const total      = requests.length;
+      const pending    = requests.filter(r => !r.gsoStatus).length;
+      const budgApprv  = requests.filter(r => r.gsoStatus === "received").length;
+      const mayorApprv = requests.filter(r => r.gsoStatus === "processing").length;
+      const processing = requests.filter(r => r.gsoStatus === "received" || r.gsoStatus === "processing").length;
+      const completed  = requests.filter(r => r.gsoStatus === "completed").length;
+
+      statsBar.innerHTML = ""
+        + '<div class="stat stat-total"><div class="num">'      + total      + '</div><div class="label">Total Requests</div></div>'
+        + '<div class="stat stat-pending"><div class="num">'    + pending    + '</div><div class="label">Awaiting GSO Action</div></div>'
+        + '<div class="stat stat-budg"><div class="num">'       + budgApprv  + '</div><div class="label">GSO Received</div></div>'
+        + '<div class="stat stat-mayor"><div class="num">'      + mayorApprv + '</div><div class="label">In Processing</div></div>'
+        + '<div class="stat stat-processing"><div class="num">' + processing + '</div><div class="label">GSO Processing</div></div>'
+        + '<div class="stat stat-completed"><div class="num">'  + completed  + '</div><div class="label">GSO Completed</div></div>';
+    }
+
+    /* ── Sync filter button active states ── */
+    function syncFilterBtns() {
+      document.querySelectorAll(".js-filter").forEach((btn) => {
+        btn.classList.toggle("filter-btn-active", btn.getAttribute("data-filter") === currentFilter);
+      });
+    }
+
+    /* ── Render request cards ── */
+    function renderRequests() {
+      const all      = getRequests().filter((request) => request.mayorStatus === "mayor_approved");
+      const filtered = applyFilter(all, currentFilter);
+
+      renderStats(all);
+
+      if (all.length === 0) {
+        requestsGrid.innerHTML = '<div class="empty">No mayor-approved requests yet. Requests will appear here after Mayor approval.</div>';
+        return;
+      }
+
+      if (filtered.length === 0) {
+        requestsGrid.innerHTML = '<div class="empty">No requests found for the selected filter.</div>';
+        return;
+      }
+
+      requestsGrid.innerHTML = filtered
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .map((r) => {
+          const token = encodeURIComponent(String(r.id || ""));
+          const cc    = cardClass(r);
+          const gsoStatusLabel = r.gsoStatus === "completed"  ? "Completed"
+                               : r.gsoStatus === "processing" ? "In Processing"
+                               : r.gsoStatus === "received"   ? "Received by GSO"
+                               : "";
+          const gsoDateLabel   = r.gsoStatus
+            ? ('<strong>GSO Date:</strong> ' + escapeHtml(cleanDisplayText(r.gsoDate || "-")) + '<br />')
+            : "";
+          const gsoNotesLabel  = r.gsoNotes
+            ? ('<strong>GSO Notes:</strong> ' + escapeHtml(cleanDisplayText(r.gsoNotes)) + '<br />')
+            : "";
+          const mayorDateLabel = r.mayorApprovalDate
+            ? ('<strong>Mayor Signed:</strong> ' + escapeHtml(cleanDisplayText(r.mayorApprovalDate)) + '<br />')
+            : "";
+          const canUpdateGSO = normalizeStatus(r.status) === "approved" && r.mayorStatus === "mayor_approved";
+
+          return '<div class="req ' + cc + '">'
+            + '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(r.id)) + '<br />'
+            + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(r.officeName)) + ' (' + escapeHtml(cleanDisplayText(r.officeCode)) + ')<br />'
+            + '<strong>Submitted:</strong> ' + escapeHtml(cleanDisplayText(r.timestamp || "-")) + '<br />'
+            + '<strong>Grand Total:</strong> ' + escapeHtml(cleanDisplayText(r.grandTotalFormatted || "-")) + '<br />'
+            + '<strong>Items:</strong> ' + (Array.isArray(r.items) ? r.items.length : 0) + '<br />'
+            + '<strong>Budget Status:</strong> ' + budgetChip(r)
+            + (mayorChip(r) ? (' ' + mayorChip(r)) : '') + '<br />'
+            + mayorDateLabel
+            + (gsoChip(r) ? ('<strong>GSO Status:</strong> ' + gsoChip(r) + '<br />') : '')
+            + gsoDateLabel
+            + gsoNotesLabel
+            + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'
+            + '<button class="btn btn-gso js-view-action" type="button" data-token="' + token + '">'
+            + (canUpdateGSO ? 'Update GSO Status' : 'View Details')
+            + '</button>'
+            + '</div></div>';
+        }).join("");
+
+      requestsGrid.querySelectorAll(".js-view-action").forEach((btn) => {
+        btn.addEventListener("click", () => openActionModal(decodeURIComponent(btn.getAttribute("data-token"))));
+      });
+    }
+
+    function openPrintPage(requestId) {
+      const request = getRequests().find((r) => r.id === requestId);
+      if (!request || normalizeStatus(request.status) !== "approved") {
+        return;
+      }
+
+      const url = "Budget_Request_Print.html?requestId=" + encodeURIComponent(requestId);
+      window.open(url, "_blank");
+    }
+
+    /* ── Action Modal ── */
+    function openActionModal(requestId) {
+      const requests = getRequests();
+      const r = requests.find(req => req.id === requestId);
+      if (!r) return;
+
+      currentRequestId = requestId;
+      modalStatus.textContent = "";
+      gsoDateInput.valueAsDate = new Date();
+
+      /* Prefill current GSO status if set */
+      gsoStatusSelect.value  = r.gsoStatus  || "";
+      gsoNotesInput.value    = r.gsoNotes   || "";
+      gsoDateInput.value     = r.gsoDate    || gsoDateInput.value;
+
+      /* Summary info */
+      const bStatus  = normalizeStatus(r.status);
+      const bLabel   = bStatus === "approved" ? "Budget Approved" : bStatus === "rejected" ? "Rejected" : "Pending";
+      const mayorLbl = r.mayorStatus === "mayor_approved" ? "Mayor Signed"
+                     : r.mayorStatus === "mayor_declined" ? "Mayor Declined" : "—";
+      const gsoLbl   = r.gsoStatus === "completed"  ? "GSO Completed"
+                     : r.gsoStatus === "processing" ? "In Processing"
+                     : r.gsoStatus === "received"   ? "Received by GSO" : "No GSO action";
+
+      modalRequestInfo.innerHTML = ""
+        + "<strong>Request ID:</strong> "    + escapeHtml(cleanDisplayText(r.id))       + "<br />"
+        + "<strong>Office:</strong> "        + escapeHtml(cleanDisplayText(r.officeName)) + " (" + escapeHtml(cleanDisplayText(r.officeCode)) + ")<br />"
+        + "<strong>Submitted:</strong> "     + escapeHtml(cleanDisplayText(r.timestamp || "—"))           + "<br />"
+        + "<strong>Grand Total:</strong> "   + escapeHtml(cleanDisplayText(r.grandTotalFormatted || "—")) + "<br />"
+        + "<strong>Budget Status:</strong> " + escapeHtml(bLabel)   + "<br />"
+        + "<strong>Mayor Status:</strong> "  + escapeHtml(mayorLbl) + "<br />"
+        + "<strong>Current GSO Status:</strong> " + escapeHtml(gsoLbl);
+
+      /* Full PR details */
+      modalPRDetails.innerHTML = renderPRDetail(r);
+
+      /* Only allow editing GSO status for mayor-approved requests */
+      const canEdit = bStatus === "approved" && r.mayorStatus === "mayor_approved";
+      gsoStatusSelect.disabled = !canEdit;
+      gsoDateInput.disabled    = !canEdit;
+      gsoNotesInput.disabled   = !canEdit;
+      saveGSOStatusBtn.disabled = !canEdit;
+      if (!canEdit) {
+        modalStatus.textContent = "GSO status can only be updated for mayor-approved requests.";
+      }
+
+      actionModal.classList.remove("hidden");
+    }
+
+    function closeActionModal() {
+      actionModal.classList.add("hidden");
+      currentRequestId = null;
+    }
+
+    /* ── Save GSO Status ── */
+    function saveGSOStatus() {
+      if (!currentRequestId) return;
+      if (!gsoDateInput.value) { modalStatus.textContent = "Please select a date."; return; }
+
+      const requests = getRequests();
+      const idx = requests.findIndex(r => r.id === currentRequestId);
+      if (idx < 0) { modalStatus.textContent = "Request not found."; return; }
+
+      const newStatus = gsoStatusSelect.value;
+      if (!newStatus) { modalStatus.textContent = "Please select a GSO status."; return; }
+
+      requests[idx].gsoStatus = newStatus;
+      requests[idx].gsoDate   = gsoDateInput.value;
+      requests[idx].gsoNotes  = gsoNotesInput.value.trim();
+
+      saveRequests(requests);
+      modalStatus.textContent = "GSO status updated successfully.";
+      setTimeout(() => {
+        closeActionModal();
+        renderRequests();
+      }, 700);
+    }
+
+    /* ── Filter button wiring ── */
+    document.querySelectorAll(".js-filter").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentFilter = btn.getAttribute("data-filter");
+        syncFilterBtns();
+        renderRequests();
+      });
+    });
+
+    /* ── Modal button wiring ── */
+    closeActionBtn.addEventListener("click", closeActionModal);
+    cancelActionBtn.addEventListener("click", closeActionModal);
+    printGSORequestBtn.addEventListener("click", () => {
+      if (currentRequestId) {
+        openPrintPage(currentRequestId);
+      }
+    });
+    saveGSOStatusBtn.addEventListener("click", saveGSOStatus);
+    actionModal.addEventListener("click", (e) => { if (e.target === actionModal) closeActionModal(); });
+
+    /* ── Boot ── */
+    async function boot() {
+      await initializeServerSync();
+      syncFilterBtns();
+      renderRequests();
+    }
+
+    boot();
+  </script>
+</body>
+</html>

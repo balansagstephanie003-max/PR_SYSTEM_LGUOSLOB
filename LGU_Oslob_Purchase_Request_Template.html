@@ -1,0 +1,3346 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LGU Oslob Purchase Request</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-1: #1f1f1f;
+      --blue-2: #5b5b5b;
+      --gold-1: #8a8a8a;
+      --gold-2: #4a4a4a;
+    }
+
+    body {
+      font-family: "Inter", "Segoe UI", sans-serif;
+      background: radial-gradient(ellipse at top, #7b7b7b 0%, #4e4e4e 55%, #222 100%);
+      min-height: 100vh;
+      color: #111;
+    }
+
+    .app {
+      min-height: 100vh;
+      width: 100%;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .topbar {
+      width: 100%;
+      background: linear-gradient(160deg, var(--blue-1) 0%, var(--blue-2) 55%, var(--blue-1) 100%);
+      border: 1px solid var(--gold-1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .topbar-logo {
+      width: 54px;
+      height: 54px;
+      object-fit: contain;
+      border-radius: 50%;
+      background: #fff;
+      padding: 3px;
+      box-shadow: inset 0 0 0 2px var(--gold-1), 0 2px 6px rgba(0,0,0,0.4);
+      flex: 0 0 auto;
+    }
+
+    .topbar-text {
+      color: #fff;
+      line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+      min-width: 0;
+    }
+
+    .topbar-text h1 {
+      font-family: "Playfair Display", "Times New Roman", serif;
+      font-size: 20px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .topbar-text p {
+      font-size: 12px;
+      color: #d8d8d8;
+    }
+
+    .session-info {
+      color: #fff;
+      font-size: 13px;
+      text-align: right;
+      line-height: 1.3;
+      min-width: 210px;
+    }
+
+    .main-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .page {
+      width: 100%;
+      height: 100%;
+      background: #f3f3f3;
+      border-radius: 4px;
+      box-shadow:
+        0 2px 0 #9a9a9a,
+        0 6px 0 #686868,
+        0 10px 0 #3d3d3d,
+        0 14px 30px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .doc-banner {
+      background: linear-gradient(160deg, var(--blue-1) 0%, var(--blue-2) 50%, var(--blue-1) 100%);
+      color: #fff;
+      text-align: center;
+      padding: 18px 16px 16px;
+      position: relative;
+      border-bottom: 4px solid var(--gold-1);
+      box-shadow: inset 0 -4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+
+    .doc-banner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 10px);
+      pointer-events: none;
+    }
+
+    .doc-banner .title {
+      font-family: "Playfair Display", "Times New Roman", serif;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-shadow: 0 1px 0 #bdbdbd, 0 2px 0 #8f8f8f, 0 3px 0 #5f5f5f, 0 4px 6px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .doc-banner .sub {
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #d3d3d3;
+      margin-top: 2px;
+      position: relative;
+    }
+
+    .doc-banner .lgu {
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--gold-1);
+      text-shadow: 0 1px 0 #d7d7d7, 0 2px 0 #9c9c9c, 0 3px 4px rgba(0,0,0,0.4);
+      margin-top: 2px;
+      position: relative;
+    }
+
+    .table-wrap {
+      padding: 14px 18px 16px;
+      overflow: auto;
+      flex: 1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      box-shadow: 0 2px 8px rgba(10,30,80,0.12), inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    td, th {
+      border: 1px solid #6f6f6f;
+      padding: 5px 8px;
+      vertical-align: middle;
+      font-size: 13.5px;
+      font-family: "Inter", "Segoe UI", sans-serif;
+    }
+
+    .meta-row td { background: #ededed; }
+
+    .label-cell,
+    .sig-label-cell {
+      font-weight: bold;
+      white-space: nowrap;
+      background: linear-gradient(90deg, #2a2a2a 0%, #5a5a5a 100%) !important;
+      color: #fff !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+      border-color: var(--blue-1) !important;
+      width: 155px;
+    }
+
+    .department-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--blue-1);
+      letter-spacing: 0.5px;
+    }
+
+    .section-value {
+      font-size: 15px;
+      font-weight: bold;
+      color: var(--blue-1);
+    }
+
+    .items-header th {
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.2;
+      background: linear-gradient(180deg, #4d4d4d 0%, var(--blue-1) 100%);
+      color: #fff;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+      border-color: var(--blue-1);
+      padding: 8px 4px;
+    }
+
+    .items-cell { height: 34px; background: #fff; }
+
+    #itemsBody tr:nth-child(even) td { background: #ededed; }
+
+    .peso-wrap {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .peso-sign {
+      color: var(--blue-1);
+      font-weight: bold;
+      font-size: 13px;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .grand-total-row td {
+      background: linear-gradient(90deg, #e7e7e7, #cfcfcf) !important;
+      font-weight: bold;
+      border-top: 2px solid var(--blue-2);
+      color: var(--blue-1);
+    }
+
+    .approval-name-cell {
+      text-align: center;
+      font-size: 15px;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: var(--blue-1);
+      background: #ededed;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .approval-name-input {
+      text-align: center !important;
+      font-weight: bold !important;
+      text-transform: uppercase !important;
+      color: var(--blue-1) !important;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .approval-position-cell {
+      text-align: center;
+      font-weight: bold;
+      background: #ededed;
+      color: #333;
+      font-style: italic;
+    }
+
+    .approval-position-input {
+      text-align: center !important;
+      font-weight: bold !important;
+      font-style: italic !important;
+      color: #333 !important;
+    }
+
+    .requested-signature-box {
+      min-height: 48px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 2px 4px;
+      background: #fff;
+    }
+
+    .requested-signature-image {
+      max-height: 34px;
+      max-width: 100%;
+      object-fit: contain;
+      display: none;
+    }
+
+    .signature-row td {
+      border-bottom: none;
+    }
+
+    .printed-name-row td {
+      border-top: none;
+    }
+
+    .requested-signature-image.active {
+      display: block;
+    }
+
+    .sig-status {
+      min-width: 200px;
+      font-size: 12px;
+      color: var(--blue-1);
+      font-weight: 600;
+      align-self: center;
+    }
+
+    .auth-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--blue-1);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .office-dash-title {
+      padding: 13px 12px;
+      border-bottom: 2px solid #d0d0d0;
+      background: #f3f3f3;
+      color: var(--blue-1);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .office-dash-body {
+      padding: 14px 12px;
+    }
+
+    .signature-pad {
+      width: 100%;
+      height: 96px;
+      border: 1px solid #bdbdbd;
+      border-radius: 6px;
+      background: #fff;
+      display: block;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .sig-dash-actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .sig-upload-actions {
+      margin-top: 6px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .sig-mini-btn {
+      flex: 1;
+      border: 1px solid #a8a8a8;
+      background: #f7f7f7;
+      color: var(--blue-1);
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .sig-mini-btn:hover {
+      background: #ebebeb;
+    }
+
+    .sig-upload-input {
+      width: 100%;
+      border: 1px solid #bdbdbd;
+      border-radius: 6px;
+      padding: 7px 8px;
+      font-size: 12px;
+      color: #2b2b2b;
+      background: #fafafa;
+    }
+
+    .dash-sig-preview {
+      margin-top: 10px;
+      min-height: 52px;
+      border: 1px dashed #acacac;
+      border-radius: 6px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 6px;
+    }
+
+    .dash-sig-preview img {
+      max-width: 100%;
+      max-height: 34px;
+      object-fit: contain;
+      display: none;
+    }
+
+    .dash-sig-preview.has-image img {
+      display: block;
+    }
+
+    .dash-sig-preview-text {
+      font-size: 12px;
+      color: #808080;
+    }
+
+    .office-dash-extra-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .office-request-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .office-request-card {
+      border: 1px solid #d8d8d8;
+      border-left: 4px solid #5b5b5b;
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .office-request-summary {
+      margin-bottom: 8px;
+    }
+
+    .office-request-controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .office-request-toggle {
+      min-width: 88px;
+    }
+
+    .office-request-details.hidden {
+      display: none !important;
+    }
+
+    .office-requests-global-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .office-request-status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+
+    .office-request-status.pending {
+      background: #fff3e0;
+      color: #ff9800;
+    }
+
+    .office-request-status.approved {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .office-request-status.rejected {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .office-pr-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px dashed #c8c8c8;
+      padding-bottom: 6px;
+    }
+
+    .office-pr-title {
+      font-family: "Playfair Display", serif;
+      font-size: 16px;
+      color: #1f1f1f;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .office-pr-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .office-pr-table th,
+    .office-pr-table td {
+      border: 1px solid #cfcfcf;
+      padding: 5px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .office-pr-table th {
+      background: #f2f2f2;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .office-pr-total {
+      margin-top: 6px;
+      text-align: right;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .office-pr-banner {
+      margin-top: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #454545;
+      border-radius: 6px;
+      background: linear-gradient(160deg, #2e2e2e 0%, #515151 55%, #2e2e2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 8px 8px 10px;
+    }
+
+    .office-pr-banner .title {
+      font-family: "Playfair Display", serif;
+      font-size: 22px;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .office-pr-banner .sub {
+      font-size: 14px;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
+      opacity: 0.95;
+    }
+
+    .office-pr-banner .lgu {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      opacity: 0.2;
+      letter-spacing: 4px;
+      margin-top: -4px;
+    }
+
+    .office-pr-meta {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .office-pr-meta td {
+      border: 1px solid #cfcfcf;
+      padding: 5px 6px;
+    }
+
+    .office-pr-meta .label {
+      width: 130px;
+      background: linear-gradient(90deg, #353535 0%, #555 100%);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .office-pr-purpose {
+      margin-top: 6px;
+      border: 1px solid #cfcfcf;
+      border-radius: 4px;
+      background: #f8f8f8;
+      padding: 7px;
+      min-height: 44px;
+      white-space: pre-wrap;
+      font-size: 12px;
+    }
+
+    .office-pr-sign-block {
+      margin-top: 8px;
+      border: 1px solid #cfcfcf;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .office-pr-sign-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #e9edf3;
+      border-bottom: 1px solid #cfcfcf;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .office-pr-sign-head div { padding: 6px; }
+
+    .office-pr-sign-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      font-size: 12px;
+    }
+
+    .office-pr-sign-col {
+      border-right: 1px solid #cfcfcf;
+      padding: 8px;
+      min-height: 74px;
+    }
+
+    .office-pr-sign-col:last-child {
+      border-right: none;
+    }
+
+    .office-pr-signature-row {
+      margin-top: 6px;
+      border: 1px dashed #c8c8c8;
+      border-radius: 4px;
+      background: #fafafa;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .office-pr-signature-row img {
+      max-width: 100%;
+      max-height: 38px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .approval-section {
+      margin-top: 32px;
+      padding: 24px;
+      background: #f9f9f9;
+      border: 2px solid #d0d0d0;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .approval-section.active {
+      display: block;
+    }
+
+    .approval-container {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 180px;
+    }
+
+    .approval-stamp-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+
+    .approval-stamp {
+      max-width: 200px;
+      max-height: 200px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .approval-signature-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      flex: 0 0 auto;
+    }
+
+    .budget-signature {
+      max-width: 180px;
+      max-height: 100px;
+      object-fit: contain;
+      border-bottom: 2px solid #333;
+      padding-bottom: 8px;
+      min-width: 150px;
+    }
+
+    .signature-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .office-pr-sign-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .office-pr-sign-table th,
+    .office-pr-sign-table td {
+      border: 1px solid #cfcfcf;
+      padding: 6px;
+      vertical-align: middle;
+    }
+
+    .office-pr-sign-table .left-label {
+      width: 130px;
+      background: linear-gradient(90deg, #353535 0%, #555 100%);
+      color: #fff;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .office-pr-sign-title {
+      background: #e9edf3;
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .office-pr-name-cell {
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .office-pr-designation-cell {
+      text-align: center;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    .office-budget-approval-area {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .office-budget-approval-overlay {
+      position: relative;
+      width: min(460px, 100%);
+      min-height: 140px;
+      overflow: hidden;
+    }
+
+    .office-budget-approval-stamp {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 1;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-align: center;
+      color: #3f3f3f;
+    }
+
+    .office-budget-approval-stamp img {
+      max-width: 92%;
+      max-height: 118px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .office-budget-approval-signature {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      padding: 10px;
+    }
+
+    .office-budget-approval-signature img {
+      max-width: 52%;
+      max-height: 52px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .send-password-modal-card {
+      width: min(430px, 94vw);
+    }
+
+    .send-password-modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .send-password-hint {
+      font-size: 12px;
+      color: #5f5f5f;
+      line-height: 1.5;
+      background: #f8f8f8;
+      border: 1px solid #ececec;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .send-password-status {
+      min-height: 18px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #c62828;
+    }
+
+    .send-password-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .request-toast {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 120;
+      min-width: 260px;
+      max-width: 420px;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .request-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .request-toast.success {
+      background: linear-gradient(135deg, #1f8f45 0%, #2e7d32 100%);
+    }
+
+    .request-toast.error {
+      background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%);
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      font-size: 13.5px;
+      padding: 0;
+      color: #111;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      background: rgba(201,162,39,0.09);
+      border-radius: 2px;
+    }
+
+    .readonly-field {
+      font-weight: bold;
+      text-transform: uppercase;
+      color: var(--blue-1);
+    }
+
+    .purpose-input {
+      min-height: 52px;
+      resize: vertical;
+      display: block;
+      width: 100%;
+      padding: 5px 2px;
+      line-height: 1.5;
+    }
+
+    .controls {
+      padding: 12px 18px 16px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      background: linear-gradient(180deg, #e6e6e6 0%, #cdcdcd 100%);
+      border-top: 3px solid var(--blue-2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      padding: 9px 14px;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      transition: all 0.1s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #666 0%, #393939 55%, #151515 100%);
+      color: #fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 0 #050505, 0 6px 10px rgba(0,0,0,0.32);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(180deg, #f5f5f3 0%, #d8d8d6 100%);
+      color: #333;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 4px 0 #999, 0 6px 10px rgba(0,0,0,0.22);
+    }
+
+    .btn-gold {
+      background: linear-gradient(180deg, #f4f4f4 0%, #b5b5b5 55%, #676767 100%);
+      color: #111;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 4px 0 #454545, 0 6px 10px rgba(0,0,0,0.3);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset !important; }
+
+    .side-panel {
+      background: #dddddd;
+      border: 1px solid var(--blue-1);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+      border-radius: 4px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 14px;
+      gap: 10px;
+    }
+
+    /* ── Auth Card ── */
+    .auth-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+
+    .auth-pane {
+      display: block;
+      padding: 18px 16px 16px;
+    }
+
+    .auth-pane.active { display: block; }
+
+    .auth-actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: start;
+      margin-top: 4px;
+    }
+
+    .btn-action-secondary {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(160deg, #efefef 0%, #c8c8c8 100%);
+      color: #111;
+      border: 1px solid #8e8e8e;
+      border-radius: 6px;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: filter 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-action-secondary:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 1000;
+    }
+
+    .modal-card {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.3);
+      overflow: hidden;
+      border: 1px solid #b8b8b8;
+    }
+
+    .modal-header {
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #2f2f2f 0%, #181818 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .modal-close {
+      border: none;
+      background: transparent;
+      color: #fff;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 16px;
+    }
+
+    /* ── Field elements ── */
+    .field { margin-bottom: 12px; }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      color: #666;
+      font-weight: bold;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1.5px solid #bcbcbc;
+      border-radius: 6px;
+      padding: 9px 10px;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      font-size: 13.5px;
+      background: #fafafa;
+      color: #222;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--blue-2);
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.11);
+    }
+
+    /* ── Action button (Register / Login) ── */
+    .btn-action {
+      width: 100%;
+      margin-top: 4px;
+      padding: 11px;
+      background: linear-gradient(160deg, #595959 0%, var(--blue-1) 100%);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: filter 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-action:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    }
+
+    .btn-action:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--blue-1);
+      min-height: 18px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #6e6e6e;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* ── Admin Access collapsible ── */
+    .admin-toggle-btn {
+      width: 100%;
+      padding: 9px 12px;
+      background: transparent;
+      border: 1px dashed #9ab0cc;
+      border-radius: 6px;
+      color: #8a9ab8;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .admin-toggle-btn:hover {
+      background: rgba(13,45,94,0.05);
+      border-color: var(--blue-2);
+      color: var(--blue-1);
+    }
+
+    .admin-toggle-btn.open {
+      background: rgba(13,45,94,0.06);
+      border-color: var(--blue-2);
+      color: var(--blue-1);
+      border-radius: 6px 6px 0 0;
+      border-bottom-style: solid;
+    }
+
+    .admin-login-inner {
+      background: #fff;
+      border: 1px solid #c5d5e8;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      padding: 14px;
+    }
+
+    .btn-admin {
+      width: 100%;
+      margin-top: 4px;
+      padding: 9px;
+      background: linear-gradient(160deg, #5a3a8a 0%, #3a1a5e 100%);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter 0.2s ease;
+    }
+
+    .btn-admin:hover { filter: brightness(1.12); }
+
+    /* ── Admin Dashboard ── */
+    .admin-dash {
+      display: none;
+      overflow: auto;
+      flex: 1;
+    }
+
+    .admin-dash.active { display: block; }
+
+    .panel-title {
+      color: var(--blue-1);
+      margin-bottom: 10px;
+      font-size: 16px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .admin-card {
+      border: 1px solid #c5d5e8;
+      background: #fff;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .empty-box {
+      border: 1px dashed #9ab0cc;
+      background: #fff;
+      border-radius: 6px;
+      padding: 12px;
+      min-height: 70px;
+      font-size: 14px;
+      color: #4a6080;
+    }
+
+    /* ── Password eye toggle ── */
+    .pw-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .pw-wrap input { padding-right: 34px !important; }
+
+    .pw-eye {
+      position: absolute;
+      right: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #8a9ab8;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+
+    .pw-eye:hover { color: var(--blue-1); background: rgba(26,74,138,0.07); }
+
+    /* ── Admin full-screen page ── */
+    .admin-full-page {
+      min-height: 100vh;
+      width: 100%;
+      background: radial-gradient(ellipse at top, #6a6a6a 0%, #3d3d3d 100%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .admin-pg-topbar {
+      background: linear-gradient(160deg, var(--blue-1) 0%, var(--blue-2) 55%, var(--blue-1) 100%);
+      border-bottom: 3px solid var(--gold-1);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.32);
+      gap: 12px;
+    }
+
+    .admin-pg-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .admin-pg-title h2 {
+      font-family: "Playfair Display", "Times New Roman", serif;
+      font-size: 20px;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .admin-pg-title p {
+      font-size: 12px;
+      color: #d0d0d0;
+      margin-top: 2px;
+    }
+
+    .admin-pg-badge {
+      background: var(--gold-1);
+      color: #111;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .admin-pg-content {
+      padding: 28px 28px 40px;
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .admin-stat-bar {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .admin-stat {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      padding: 16px 24px;
+      color: #fff;
+      min-width: 150px;
+    }
+
+    .admin-stat-num {
+      font-family: "Playfair Display", serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .admin-stat-label {
+      font-size: 12px;
+      color: #d2d2d2;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .admin-section-title {
+      font-family: "Playfair Display", serif;
+      font-size: 18px;
+      color: #fff;
+      margin-bottom: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    .admin-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 14px;
+    }
+
+    .admin-pg-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 13.5px;
+      line-height: 1.65;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+      border-left: 4px solid var(--blue-2);
+    }
+
+    .admin-pg-card strong { color: var(--blue-1); }
+
+    .admin-empty {
+      background: rgba(255,255,255,0.07);
+      border: 1px dashed rgba(255,255,255,0.22);
+      border-radius: 10px;
+      padding: 32px;
+      color: #d0d0d0;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 1100px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .session-info {
+        min-width: 0;
+      }
+    }
+
+    @media print {
+      body { background: #fff !important; }
+      .app { padding: 0; }
+      .topbar, .page { box-shadow: none !important; border-radius: 0; }
+      .main-grid { display: block; }
+      .side-panel { display: none !important; }
+      .doc-banner, .label-cell, .sig-label-cell, .items-header th, .grand-total-row td {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .controls { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="appRoot">
+    <div class="topbar">
+      <div class="topbar-left">
+        <img src="images/OSLOB SEAL.png" alt="LGU Oslob Seal" class="topbar-logo" />
+        <div class="topbar-text">
+          <h1>Municipality of Oslob</h1>
+          <p>Local Government Unit of Oslob</p>
+        </div>
+      </div>
+      <div id="sessionInfo" class="session-info">Not logged in</div>
+    </div>
+
+    <div class="main-grid">
+      <div class="page">
+        <div class="doc-banner">
+          <div class="title">PURCHASE REQUEST</div>
+          <div class="sub">OSLOB, CEBU</div>
+          <div class="lgu">LGU</div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="prTable">
+            <tr class="meta-row">
+              <td class="label-cell">Department:</td>
+              <td class="department-value" colspan="4">MAYOR'S OFFICE</td>
+            </tr>
+
+            <tr class="meta-row">
+              <td class="label-cell">Section:</td>
+              <td class="section-value" colspan="4">
+                <select id="sectionOffice" class="select"></select>
+              </td>
+            </tr>
+
+            <tr class="items-header">
+              <th style="width:11%;">Quantity</th>
+              <th style="width:12%;">Unit<br />Issue</th>
+              <th style="width:43%;">Item Description</th>
+              <th style="width:17%;">Estimated<br />Unit Cost (&#8369;)</th>
+              <th style="width:17%;">Estimated<br />Cost (&#8369;)</th>
+            </tr>
+
+            <tbody id="itemsBody">
+              <tr>
+                <td class="items-cell"><input class="input qty" type="number" min="0" step="1" /></td>
+                <td class="items-cell"><input class="input" type="text" value="pcs" /></td>
+                <td class="items-cell"><input class="input" type="text" /></td>
+                <td class="items-cell">
+                  <div class="peso-wrap">
+                    <span class="peso-sign">&#8369;</span>
+                    <input class="input unit-cost" type="number" min="0" step="0.01" style="flex:1;" />
+                  </div>
+                </td>
+                <td class="items-cell"><input class="input row-total" type="text" readonly /></td>
+              </tr>
+              <tr>
+                <td class="items-cell"><input class="input qty" type="number" min="0" step="1" /></td>
+                <td class="items-cell"><input class="input" type="text" value="pcs" /></td>
+                <td class="items-cell"><input class="input" type="text" /></td>
+                <td class="items-cell">
+                  <div class="peso-wrap">
+                    <span class="peso-sign">&#8369;</span>
+                    <input class="input unit-cost" type="number" min="0" step="0.01" style="flex:1;" />
+                  </div>
+                </td>
+                <td class="items-cell"><input class="input row-total" type="text" readonly /></td>
+              </tr>
+            </tbody>
+
+            <tr class="grand-total-row">
+              <td colspan="4" style="text-align:right; padding-right:10px; font-weight:bold;">Grand Total:</td>
+              <td><input id="grandTotal" class="input readonly-field" type="text" value="&#8369; 0.00" readonly /></td>
+            </tr>
+
+            <tr>
+              <td class="label-cell">Purpose:</td>
+              <td colspan="4"><textarea class="input textarea purpose-input" id="purposeField" placeholder="State purpose here..."></textarea></td>
+            </tr>
+
+            <tr>
+              <td></td>
+              <td class="approval-name-cell" style="font-size:13px;letter-spacing:0.5px;background:#eef2f9;">Requested by:</td>
+              <td style="background:#eef2f9;"><input class="input approval-name-input" id="requestedBy" type="text" /></td>
+              <td class="approval-name-cell" colspan="2" style="font-size:13px;letter-spacing:0.5px;">Approved by:</td>
+            </tr>
+
+            <tr class="signature-row">
+              <td class="sig-label-cell" style="padding-top:22px;">Signature:</td>
+              <td style="padding-top:22px;" colspan="2">
+                <div id="requestedSignatureBox" class="requested-signature-box">
+                  <img id="requestedSignatureImg" class="requested-signature-image" alt="Requested by signature" />
+                </div>
+              </td>
+              <td colspan="2" style="padding-top:22px;"></td>
+            </tr>
+
+            <tr class="printed-name-row">
+              <td class="sig-label-cell">Printed Name:</td>
+              <td colspan="2"><input id="printedName" class="input approval-name-input" type="text" /></td>
+              <td class="approval-name-cell" colspan="2">ATTY. RONALD L. GUAREN</td>
+            </tr>
+
+            <tr>
+              <td class="sig-label-cell">Designation:</td>
+              <td class="approval-position-cell" colspan="2"><input class="input approval-position-input" id="designation" type="text" readonly /></td>
+              <td class="approval-position-cell" colspan="2">Municipal Mayor</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="controls">
+          <button id="addRow" class="btn btn-primary" type="button">+ Add Item Row</button>
+          <button id="removeRow" class="btn btn-secondary" type="button">- Remove Last Row</button>
+          <button id="applySignatureBtn" class="btn btn-secondary" type="button">Apply Signature</button>
+          <button id="removeSignatureBtn" class="btn btn-secondary" type="button">Remove Signature</button>
+          <span id="signatureStatus" class="sig-status"></span>
+          <button id="sendToBudgetBtn" class="btn btn-gold" type="button">Send request to Budget</button>
+          <button id="logoutBtn" class="btn btn-secondary" type="button">Logout</button>
+          <button class="btn btn-gold" type="button" onclick="window.print()">Print</button>
+        </div>
+
+      </div>
+
+      <div class="side-panel">
+        <!-- Auth Card: Login + Register Office -->
+        <div id="officeAuthSection" class="auth-card">
+          <div id="officeLoginSection" class="auth-pane active">
+            <div class="field">
+              <label for="loginOffice">Office</label>
+              <select id="loginOffice"></select>
+            </div>
+            <div class="field">
+              <label for="loginPassword">Password</label>
+              <div class="pw-wrap">
+                <input id="loginPassword" type="password" placeholder="Enter your password" />
+                <button type="button" class="pw-eye" onclick="togglePw('loginPassword', this)" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              </div>
+            </div>
+            <div class="auth-actions-row">
+              <button id="loginOfficeBtn" class="btn-action" type="button">Login</button>
+              <button id="openRegisterModalBtn" class="btn-action-secondary" type="button">Register Office</button>
+            </div>
+            <div id="loginStatus" class="status"></div>
+            <div class="hint">Use Register Office to create an account, then login here. Signature setup is in Office Dashboard after login.</div>
+          </div>
+        </div>
+
+        <div id="officeDashboardSection" class="auth-card hidden">
+          <div class="office-dash-title">Office Dashboard</div>
+          <div class="office-dash-body">
+            <div class="field">
+              <label>Draw Signature</label>
+              <canvas id="signatureCanvas" class="signature-pad"></canvas>
+              <div class="sig-dash-actions">
+                <button id="saveSignatureBtn" class="sig-mini-btn" type="button">Save Signature</button>
+                <button id="clearSignatureBtn" class="sig-mini-btn" type="button">Clear Pad</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="signatureUpload">Or Upload Signature Image</label>
+              <input id="signatureUpload" class="sig-upload-input" type="file" accept="image/*" />
+              <div class="sig-upload-actions">
+                <button id="saveUploadedSignatureBtn" class="sig-mini-btn" type="button">Save Uploaded Signature</button>
+              </div>
+            </div>
+            <div id="officeDashStatus" class="status"></div>
+            <div class="dash-sig-preview" id="officeDashPreview">
+              <span id="officeDashPreviewText" class="dash-sig-preview-text">No saved signature yet</span>
+              <img id="officeDashPreviewImg" alt="Saved signature" />
+            </div>
+            <div class="office-dash-extra-actions">
+              <button id="viewSubmittedRequestsBtn" class="sig-mini-btn" type="button">View Submitted Requests</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Budget Dashboard Approval Modal ── -->
+  <div id="budgetApprovalModal" class="modal-backdrop hidden">
+    <div class="modal-card" role="dialog" style="max-width: 600px; max-height: 90vh; overflow-y: auto;" aria-modal="true" aria-labelledby="budgetApprovalTitle">
+      <div class="modal-header">
+        <div id="budgetApprovalTitle" class="modal-title">Request Approval Form</div>
+        <button id="closeBudgetApprovalModalBtn" class="modal-close" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 18px; gap: 16px; display: flex; flex-direction: column;">
+        <div id="budgetRequestInfo" style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-size: 13px; line-height: 1.6;"></div>
+        
+        <div style="border-top: 1px solid #e0e0e0; padding-top: 16px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Budget Officer Signature</label>
+          <label for="budgetSignatureUpload" style="font-weight: 600; margin-bottom: 6px; display: block;">Or Upload Signature Image</label>
+          <input id="budgetSignatureUpload" class="sig-upload-input" type="file" accept="image/*" />
+          <div style="display: flex; gap: 8px; margin-top: 6px; margin-bottom: 10px;">
+            <button id="saveBudgetUploadedSigBtn" class="sig-mini-btn" type="button">Save Uploaded Signature</button>
+          </div>
+          <div id="budgetSigStatus"></div>
+        </div>
+
+        <div>
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Date</label>
+          <input id="budgetApprovalDate" type="date" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 13px;" />
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button id="approveBudgetBtn" class="btn btn-primary" type="button">Approve Request</button>
+          <button id="rejectBudgetBtn" class="btn btn-secondary" type="button">Reject Request</button>
+        </div>
+        <div id="budgetApprovalStatus" class="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Budget Dashboard Page (full screen) ══ -->
+  <div id="budgetPage" class="hidden admin-full-page">
+    <div class="admin-pg-topbar">
+      <div class="admin-pg-topbar-left">
+        <img src="images/OSLOB SEAL.png" alt="LGU Oslob Seal" class="topbar-logo" />
+        <div class="admin-pg-title">
+          <h2>Budget Officer Dashboard</h2>
+          <p>Municipality of Oslob &mdash; Purchase Request Approvals</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="admin-pg-badge" id="budgetOfficerBadge">Budget Officer</span>
+        <button class="btn btn-secondary" type="button" onclick="logout()" style="font-family:'Inter',sans-serif;font-size:13px;padding:7px 16px;">Logout</button>
+      </div>
+    </div>
+    <div class="admin-pg-content">
+      <div class="admin-stat-bar" id="budgetStatBar"></div>
+      <div style="margin-top: 0;">
+        <div class="admin-section-title">Pending Purchase Requests</div>
+        <div class="admin-cards-grid" id="budgetPendingGrid"></div>
+      </div>
+      <div style="margin-top: 32px;">
+        <div class="admin-section-title">Approved/Rejected Requests</div>
+        <div class="admin-cards-grid" id="budgetProcessedGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="officeRequestsModal" class="modal-backdrop hidden">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="officeRequestsTitle" style="width: min(1120px, 96vw); max-width: 1120px; max-height: 92vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div id="officeRequestsTitle" class="modal-title">Submitted Requests</div>
+        <button id="closeOfficeRequestsModalBtn" class="modal-close" type="button" aria-label="Close submitted requests">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 16px;">
+        <div class="office-requests-global-actions">
+          <button id="minimizeAllRequestsBtn" class="sig-mini-btn" type="button">Minimize</button>
+          <button id="expandAllRequestsBtn" class="sig-mini-btn" type="button">Expand</button>
+        </div>
+        <div id="officeRequestsList" class="office-request-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sendPasswordModal" class="modal-backdrop hidden">
+    <div class="modal-card send-password-modal-card" role="dialog" aria-modal="true" aria-labelledby="sendPasswordTitle">
+      <div class="modal-header">
+        <div id="sendPasswordTitle" class="modal-title">Confirm Password</div>
+        <button id="closeSendPasswordModalBtn" class="modal-close" type="button" aria-label="Close password confirmation">&times;</button>
+      </div>
+      <div class="send-password-modal-body">
+        <div class="send-password-hint">Enter your office account password to send this request to Budget.</div>
+        <div class="field">
+          <label for="sendPasswordInput">Office Password</label>
+          <div class="pw-wrap">
+            <input id="sendPasswordInput" type="password" placeholder="Enter password" />
+            <button type="button" class="pw-eye" onclick="togglePw('sendPasswordInput', this)" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <div id="sendPasswordStatus" class="send-password-status"></div>
+        <div class="send-password-actions">
+          <button id="cancelSendPasswordBtn" class="btn btn-secondary" type="button">Cancel</button>
+          <button id="confirmSendPasswordBtn" class="btn btn-gold" type="button">Send Request</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="registerModal" class="modal-backdrop hidden">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="registerModalTitle">
+      <div class="modal-header">
+        <div id="registerModalTitle" class="modal-title">Register Office</div>
+        <button id="closeRegisterModalBtn" class="modal-close" type="button" aria-label="Close register office modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="regOffice">Office</label>
+          <select id="regOffice"></select>
+        </div>
+        <div class="field">
+          <label for="regPassword">Create Password</label>
+          <div class="pw-wrap">
+            <input id="regPassword" type="password" placeholder="Create a password" />
+            <button type="button" class="pw-eye" onclick="togglePw('regPassword', this)" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <button id="registerOffice" class="btn-action" type="button">Register Office</button>
+        <div id="registerStatus" class="status"></div>
+        <div class="hint">Register once, then login from the main login panel.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="requestActionToast" class="request-toast" aria-live="polite"></div>
+
+  <!-- ══ Admin Dashboard Page (full screen) ══ -->
+  <div id="adminPage" class="hidden admin-full-page">
+    <div class="admin-pg-topbar">
+      <div class="admin-pg-topbar-left">
+        <img src="images/OSLOB SEAL.png" alt="LGU Oslob Seal" class="topbar-logo" />
+        <div class="admin-pg-title">
+          <h2>Admin Dashboard</h2>
+          <p>Municipality of Oslob &mdash; Purchase Request System</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="admin-pg-badge">Administrator</span>
+        <button class="btn btn-secondary" type="button" onclick="logout()" style="font-family:'Inter',sans-serif;font-size:13px;padding:7px 16px;">Logout</button>
+      </div>
+    </div>
+    <div class="admin-pg-content">
+      <div class="admin-stat-bar" id="adminStatBar"></div>
+      <div>
+        <div class="admin-section-title">Registered Office Accounts</div>
+        <div class="admin-cards-grid" id="adminPgCards"></div>
+      </div>
+      <div style="margin-top: 32px;">
+        <div class="admin-section-title">Submitted Purchase Requests</div>
+        <div class="admin-cards-grid" id="adminRequestsGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_USERS_KEY = "lguOslobOfficeUsers";
+    const STORAGE_SESSION_KEY = "lguOslobSession";
+    const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
+    const API_BASE_URL = window.location.origin + "/api";
+    const ADMIN_PASSWORD = "admin123";
+
+    const offices = [
+      { code: "GSO", name: "General Services Office" },
+      { code: "Post Office", name: "Philippine Postal Corporation" },
+      { code: "Accounting Office", name: "Municipal Accounting Office" },
+      { code: "Administration Office", name: "Municipal Administrator's Office" },
+      { code: "Assessor's Office", name: "Municipal Assessor's Office" },
+      { code: "BAC Office", name: "Bids and Awards Committee Office" },
+      { code: "BPLO", name: "Business Permit and Licensing Office" },
+      { code: "COMELEC", name: "Commission on Elections" },
+      { code: "Conference Hall", name: "Municipal Conference Hall" },
+      { code: "MSWDO", name: "Municipal Social Welfare and Development Office" },
+      { code: "DSWD", name: "Department of Social Welfare and Development Field Office" },
+      { code: "HR Office", name: "Human Resource Management Office" },
+      { code: "MBO Office", name: "Municipal Budget Office" },
+      { code: "MPDO", name: "Municipal Planning and Development Office" },
+      { code: "Mayor's Office", name: "Office of the Municipal Mayor" },
+      { code: "Mayor's Conference Hall", name: "Office of the Municipal Mayor Conference Hall" },
+      { code: "SB Office", name: "Sangguniang Bayan Office" },
+      { code: "SB Session Hall", name: "Sangguniang Bayan Session Hall" },
+      { code: "Vice Mayor's Office", name: "Office of the Municipal Vice Mayor" },
+      { code: "MTO", name: "Municipal Tourism Office" },
+      { code: "MAO", name: "Municipal Agriculture Office" }
+    ];
+
+    const sectionOffice = document.getElementById("sectionOffice");
+    const designation = document.getElementById("designation");
+    const itemsBody = document.getElementById("itemsBody");
+    const grandTotal = document.getElementById("grandTotal");
+    const sessionInfo = document.getElementById("sessionInfo");
+
+    const regOffice = document.getElementById("regOffice");
+    const regPassword = document.getElementById("regPassword");
+    const registerOfficeBtn = document.getElementById("registerOffice");
+    const registerStatus = document.getElementById("registerStatus");
+
+    const loginOffice = document.getElementById("loginOffice");
+    const loginPassword = document.getElementById("loginPassword");
+    const loginOfficeBtn = document.getElementById("loginOfficeBtn");
+    const loginStatus = document.getElementById("loginStatus");
+    const openRegisterModalBtn = document.getElementById("openRegisterModalBtn");
+    const registerModal = document.getElementById("registerModal");
+    const closeRegisterModalBtn = document.getElementById("closeRegisterModalBtn");
+
+    const requestedSignatureImg = document.getElementById("requestedSignatureImg");
+    const applySignatureBtn = document.getElementById("applySignatureBtn");
+    const removeSignatureBtn = document.getElementById("removeSignatureBtn");
+    const signatureStatus = document.getElementById("signatureStatus");
+    const officeDashboardSection = document.getElementById("officeDashboardSection");
+    const signatureCanvas = document.getElementById("signatureCanvas");
+    const saveSignatureBtn = document.getElementById("saveSignatureBtn");
+    const clearSignatureBtn = document.getElementById("clearSignatureBtn");
+    const signatureUpload = document.getElementById("signatureUpload");
+    const saveUploadedSignatureBtn = document.getElementById("saveUploadedSignatureBtn");
+    const officeDashStatus = document.getElementById("officeDashStatus");
+    const officeDashPreview = document.getElementById("officeDashPreview");
+    const officeDashPreviewImg = document.getElementById("officeDashPreviewImg");
+    const officeDashPreviewText = document.getElementById("officeDashPreviewText");
+    const viewSubmittedRequestsBtn = document.getElementById("viewSubmittedRequestsBtn");
+    const officeRequestsModal = document.getElementById("officeRequestsModal");
+    const closeOfficeRequestsModalBtn = document.getElementById("closeOfficeRequestsModalBtn");
+    const officeRequestsList = document.getElementById("officeRequestsList");
+    const minimizeAllRequestsBtn = document.getElementById("minimizeAllRequestsBtn");
+    const expandAllRequestsBtn = document.getElementById("expandAllRequestsBtn");
+    const sendPasswordModal = document.getElementById("sendPasswordModal");
+    const closeSendPasswordModalBtn = document.getElementById("closeSendPasswordModalBtn");
+    const cancelSendPasswordBtn = document.getElementById("cancelSendPasswordBtn");
+    const confirmSendPasswordBtn = document.getElementById("confirmSendPasswordBtn");
+    const sendPasswordInput = document.getElementById("sendPasswordInput");
+    const sendPasswordStatus = document.getElementById("sendPasswordStatus");
+    const requestActionToast = document.getElementById("requestActionToast");
+    const purposeField = document.getElementById("purposeField");
+    const requestedByInput = document.getElementById("requestedBy");
+    const printedNameInput = document.getElementById("printedName");
+
+    const officeAuthSection = document.getElementById("officeAuthSection");
+
+    // Budget Dashboard Elements
+    const budgetPage = document.getElementById("budgetPage");
+    const budgetStatBar = document.getElementById("budgetStatBar");
+    const budgetPendingGrid = document.getElementById("budgetPendingGrid");
+    const budgetProcessedGrid = document.getElementById("budgetProcessedGrid");
+    const budgetApprovalModal = document.getElementById("budgetApprovalModal");
+    const closeBudgetApprovalModalBtn = document.getElementById("closeBudgetApprovalModalBtn");
+    const budgetSignatureUpload = document.getElementById("budgetSignatureUpload");
+    const saveBudgetUploadedSigBtn = document.getElementById("saveBudgetUploadedSigBtn");
+    const budgetSigStatus = document.getElementById("budgetSigStatus");
+    const approveBudgetBtn = document.getElementById("approveBudgetBtn");
+    const rejectBudgetBtn = document.getElementById("rejectBudgetBtn");
+    const budgetApprovalDate = document.getElementById("budgetApprovalDate");
+    const budgetApprovalStatus = document.getElementById("budgetApprovalStatus");
+    const budgetRequestInfo = document.getElementById("budgetRequestInfo");
+    const budgetOfficerBadge = document.getElementById("budgetOfficerBadge");
+
+    const addRowBtn = document.getElementById("addRow");
+    const removeRowBtn = document.getElementById("removeRow");
+    const sendToBudgetBtn = document.getElementById("sendToBudgetBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    let pendingSendContext = null;
+    let requestToastTimer = null;
+
+    let isServerSyncEnabled = false;
+
+    function getOfficeSignatureKey(officeCode) {
+      return "lguOslobOfficeSignature_" + officeCode;
+    }
+
+    async function apiRequest(path, options) {
+      const response = await fetch(API_BASE_URL + path, options || {});
+      if (!response.ok) {
+        throw new Error("API error: " + response.status);
+      }
+      return response.json();
+    }
+
+    async function initializeServerSync() {
+      try {
+        await apiRequest("/health");
+        const state = await apiRequest("/state");
+        localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(state.users || {}));
+        localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(state.requests || []));
+        isServerSyncEnabled = true;
+      } catch (error) {
+        isServerSyncEnabled = false;
+      }
+    }
+
+    function syncUsersToServer(users) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+      fetch(API_BASE_URL + "/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ users: users || {} })
+      }).catch(() => {
+        isServerSyncEnabled = false;
+      });
+    }
+
+    function syncRequestsToServer(requests) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+      fetch(API_BASE_URL + "/requests", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requests: requests || [] })
+      }).catch(() => {
+        isServerSyncEnabled = false;
+      });
+    }
+
+    function saveOfficeSignatureBackup(officeCode, signatureData) {
+      if (!officeCode) return;
+      if (signatureData) {
+        localStorage.setItem(getOfficeSignatureKey(officeCode), signatureData);
+      } else {
+        localStorage.removeItem(getOfficeSignatureKey(officeCode));
+      }
+    }
+
+    function getOfficeSignatureBackup(officeCode) {
+      if (!officeCode) return "";
+      return localStorage.getItem(getOfficeSignatureKey(officeCode)) || "";
+    }
+
+    function getUsers() {
+      const raw = localStorage.getItem(STORAGE_USERS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+      syncUsersToServer(users);
+    }
+
+    function getSession() {
+      const raw = sessionStorage.getItem(STORAGE_SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function saveSession(session) {
+      sessionStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(session));
+    }
+
+    function clearSession() {
+      sessionStorage.removeItem(STORAGE_SESSION_KEY);
+    }
+
+    function getRequests() {
+      const rawStored = localStorage.getItem(STORAGE_REQUESTS_KEY);
+      if (hasInjectedPayload(rawStored)) {
+        localStorage.setItem(STORAGE_REQUESTS_KEY, "[]");
+        return [];
+      }
+      const raw = stripInjectedSnippetFromRaw(rawStored);
+      if (raw !== rawStored && raw != null) {
+        localStorage.setItem(STORAGE_REQUESTS_KEY, raw);
+      }
+      if (!raw) {
+        return [];
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+          return [];
+        }
+
+        const sanitized = parsed
+          .filter((request) => !shouldDropCorruptedRequest(request))
+          .map((request, index) => sanitizeRequestRecord(request, index));
+        if (JSON.stringify(parsed) !== JSON.stringify(sanitized)) {
+          saveRequests(sanitized);
+        }
+        return sanitized;
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveRequests(requests) {
+      localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(requests));
+      syncRequestsToServer(requests);
+    }
+
+    function stripInjectedSnippetFromRaw(raw) {
+      if (typeof raw !== "string") {
+        return raw;
+      }
+
+      return raw.replace(/function\s+printApprovedRequest\s*\(\s*requestId\s*\)\s*\{[\s\S]*?window\.printApprovedRequest\s*=\s*printApprovedRequest;?/gi, "");
+    }
+
+    function hasInjectedPayload(raw) {
+      if (typeof raw !== "string") {
+        return false;
+      }
+      const lowered = raw.toLowerCase();
+      return lowered.includes("function printapprovedrequest(requestid)")
+        || lowered.includes("window.printapprovedrequest = printapprovedrequest");
+    }
+
+    function sendRequestToBudget() {
+      const session = getSession();
+      if (!session || session.role !== "office") {
+        signatureStatus.textContent = "Login as an office account first.";
+        return;
+      }
+
+      const users = getUsers();
+      const account = users[session.officeCode];
+      if (!account) {
+        signatureStatus.textContent = "Office account not found.";
+        return;
+      }
+
+      // Get grand total value
+      const grandTotalText = grandTotal.value;
+      const grandTotalAmount = parseAmount(grandTotalText);
+      
+      if (grandTotalAmount <= 0) {
+        signatureStatus.textContent = "Cannot send request with zero total. Add items first.";
+        return;
+      }
+
+      // Create request object
+      const request = {
+        id: "PR-" + Date.now(),
+        timestamp: new Date().toLocaleString(),
+        officeCode: session.officeCode,
+        officeName: account.officeName,
+        section: sectionOffice.value,
+        purpose: purposeField.value.trim(),
+        requestedBy: requestedByInput.value.trim(),
+        printedName: printedNameInput.value.trim(),
+        designation: designation.value,
+        requestedSignature: requestedSignatureImg.classList.contains("active") ? requestedSignatureImg.src : "",
+        grandTotal: grandTotalAmount,
+        grandTotalFormatted: grandTotalText,
+        status: "pending",
+        officeStatus: "pending_budget",
+        items: []
+      };
+
+      // Collect items from form
+      const rows = itemsBody.querySelectorAll("tr");
+      let hasInvalidCost = false;
+      rows.forEach((row) => {
+        const qtyInput = row.querySelector(".qty");
+        const unitInput = row.querySelectorAll(".input")[1];
+        const descInput = row.querySelectorAll(".input")[2];
+        const unitCostInput = row.querySelector(".unit-cost");
+        const rowTotalInput = row.querySelector(".row-total");
+
+        if (qtyInput && unitInput && descInput && unitCostInput && rowTotalInput) {
+          const qty = parseFloat(qtyInput.value) || 0;
+          const unitCostAmount = parseAmount(unitCostInput.value);
+          const estimatedCostAmount = parseAmount(rowTotalInput.value) || (qty * unitCostAmount);
+          if (qty > 0) {
+            if (unitCostAmount <= 0 || estimatedCostAmount <= 0) {
+              hasInvalidCost = true;
+              return;
+            }
+            request.items.push({
+              quantity: qty,
+              unit: unitInput.value,
+              description: descInput.value,
+              unitCost: formatAmount(unitCostAmount),
+              totalCost: formatAmount(estimatedCostAmount),
+              unitCostValue: unitCostAmount,
+              totalCostValue: estimatedCostAmount
+            });
+          }
+        }
+      });
+
+      if (hasInvalidCost) {
+        signatureStatus.textContent = "Each row with quantity must have a valid unit cost.";
+        return;
+      }
+
+      if (request.items.length === 0) {
+        signatureStatus.textContent = "Cannot send request with no items.";
+        return;
+      }
+
+      pendingSendContext = { request, account, session };
+      openSendPasswordModal();
+    }
+
+    function openSendPasswordModal() {
+      if (!pendingSendContext) {
+        return;
+      }
+      sendPasswordStatus.textContent = "";
+      sendPasswordInput.value = "";
+      sendPasswordModal.classList.remove("hidden");
+      setTimeout(() => {
+        sendPasswordInput.focus();
+      }, 20);
+    }
+
+    function closeSendPasswordModal() {
+      sendPasswordModal.classList.add("hidden");
+      sendPasswordStatus.textContent = "";
+      sendPasswordInput.value = "";
+    }
+
+    function showRequestActionToast(message, type) {
+      if (!requestActionToast) {
+        return;
+      }
+      requestActionToast.textContent = message;
+      requestActionToast.className = "request-toast " + (type || "success") + " show";
+      if (requestToastTimer) {
+        clearTimeout(requestToastTimer);
+      }
+      requestToastTimer = setTimeout(() => {
+        requestActionToast.classList.remove("show");
+      }, 3200);
+    }
+
+    function confirmSendWithPassword() {
+      if (!pendingSendContext) {
+        closeSendPasswordModal();
+        return;
+      }
+
+      const enteredPassword = sendPasswordInput.value;
+      if (enteredPassword !== pendingSendContext.account.password) {
+        sendPasswordStatus.textContent = "Incorrect password. Please try again.";
+        showRequestActionToast("Incorrect password. Request not sent.", "error");
+        sendPasswordInput.focus();
+        sendPasswordInput.select();
+        return;
+      }
+
+      const context = pendingSendContext;
+      pendingSendContext = null;
+      closeSendPasswordModal();
+
+      // Save request
+      const requests = getRequests();
+      requests.push(context.request);
+      saveRequests(requests);
+
+      // Update admin dashboard if admin is viewing
+      if (context.session.role === "admin") {
+        renderAdminDashboard();
+      }
+
+      signatureStatus.textContent = "Request Successfully Sent. Request ID: " + context.request.id;
+      showRequestActionToast("Request Successfully Sent. ID: " + context.request.id, "success");
+      clearRequestFormAfterSend();
+      setTimeout(() => {
+        signatureStatus.textContent = "";
+      }, 5000);
+    }
+
+    function openOfficeRequestsModal() {
+      const session = getSession();
+      if (!session || session.role !== "office") {
+        officeDashStatus.textContent = "Login as an office account first.";
+        return;
+      }
+
+      const requests = getRequests()
+        .filter((request) => request.officeCode === session.officeCode)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      if (requests.length === 0) {
+        officeRequestsList.innerHTML = '<div class="admin-empty">No submitted requests yet.</div>';
+      } else {
+        officeRequestsList.innerHTML = requests.map(renderOfficeRequestPrintView).join("");
+      }
+
+      officeRequestsModal.classList.remove("hidden");
+    }
+
+    function renderOfficeRequestPrintView(request) {
+      const MAYOR_PRINTED_NAME = "ATTY. RONALD L. GUAREN";
+      const MAYOR_DESIGNATION = "Municipal Mayor";
+      const budgetStatus = normalizeRequestStatus(request.status);
+      let officeStatusText = "Pending Budget Review";
+      let statusClass = "pending";
+      let decisionDate = request.timestamp || "-";
+      let decisionBy = "-";
+
+      if (request.officeStatus === "approved" || request.mayorStatus === "mayor_approved") {
+        officeStatusText = "Approved";
+        statusClass = "approved";
+        decisionDate = request.mayorApprovalDate || request.approvalDate || request.budgetDecisionDate || "-";
+        decisionBy = "Municipal Mayor";
+      } else if (request.officeStatus === "declined_mayor" || request.mayorStatus === "mayor_declined") {
+        officeStatusText = "Declined by Mayor";
+        statusClass = "rejected";
+        decisionDate = request.mayorDeclinedDate || "-";
+        decisionBy = "Municipal Mayor";
+      } else if (request.officeStatus === "for_mayor" || budgetStatus === "approved") {
+        officeStatusText = "For Mayor Approval";
+        statusClass = "pending";
+        decisionDate = request.budgetDecisionDate || request.approvalDate || "-";
+        decisionBy = request.budgetOfficer || request.approvedBy || "Budget Officer";
+      } else if (request.officeStatus === "rejected_budget" || budgetStatus === "rejected") {
+        officeStatusText = "Rejected by Budget";
+        statusClass = "rejected";
+        decisionDate = request.budgetDecisionDate || request.rejectionDate || "-";
+        decisionBy = request.budgetOfficer || request.rejectedBy || "Budget Officer";
+      }
+
+      const isApproved = budgetStatus === "approved";
+      const items = Array.isArray(request.items) ? request.items : [];
+      const itemRows = items.length === 0
+        ? '<tr><td colspan="5">No items</td></tr>'
+        : items.map((item) => {
+            return '<tr>'
+              + '<td>' + (item.quantity || "") + '</td>'
+              + '<td>' + (item.unit || "") + '</td>'
+              + '<td>' + (item.description || "") + '</td>'
+                  + '<td>' + ((item.unitCostValue > 0 ? formatAmount(item.unitCostValue) : "") || item.unitCost || item.unitCostFormatted || "") + '</td>'
+                  + '<td>' + ((item.totalCostValue > 0 ? formatAmount(item.totalCostValue) : "") || item.totalCost || item.estimatedCost || item.totalCostFormatted || "") + '</td>'
+              + '</tr>';
+          }).join("");
+      const purpose = escapeHtml(request.purpose || "-");
+      const requestedBy = escapeHtml(request.printedName || request.requestedBy || "-");
+      const requestedDesignation = escapeHtml(request.designation || request.officeCode || "-");
+      const requestedSignature = request.requestedSignature || "";
+      const budgetSignature = request.budgetSignatureData || "";
+      const budgetStampData = request.budgetStampData || "";
+      const budgetStampText = escapeHtml(request.budgetStamp || "BUDGET APPROVED");
+      const requestedSignatureView = requestedSignature
+        ? '<img src="' + requestedSignature + '" alt="Requested signature" />'
+        : '';
+      const budgetSignatureView = budgetSignature
+        ? '<img src="' + budgetSignature + '" alt="Budget signature" />'
+        : '';
+      const budgetStampView = budgetStampData
+        ? '<img src="' + budgetStampData + '" alt="Approved stamp" />'
+        : '';
+      const gsoStatusText = request.gsoStatus === "completed"
+        ? "Completed"
+        : request.gsoStatus === "processing"
+          ? "In Processing"
+          : request.gsoStatus === "received"
+            ? "Received by GSO"
+            : "No GSO action yet";
+      const gsoDateText = request.gsoDate || "-";
+      const gsoNotesText = request.gsoNotes || "-";
+      return '<div class="office-request-card">'
+        + '<div class="office-request-summary">'
+        + '<strong>Request ID:</strong> ' + escapeHtml(request.id) + '<br />'
+        + '<strong>Office:</strong> ' + escapeHtml(request.officeName) + ' (' + escapeHtml(request.officeCode) + ')<br />'
+        + '<strong>Status:</strong> <span class="office-request-status ' + statusClass + '">' + officeStatusText + '</span><br />'
+        + '<strong>Processed By:</strong> ' + escapeHtml(decisionBy) + '<br />'
+        + '<strong>Processed Date:</strong> ' + escapeHtml(decisionDate) + '<br />'
+        + '<strong>GSO Status:</strong> ' + escapeHtml(gsoStatusText) + '<br />'
+        + '<strong>GSO Date:</strong> ' + escapeHtml(gsoDateText) + '<br />'
+        + '<strong>GSO Notes:</strong> ' + escapeHtml(gsoNotesText)
+        + '</div>'
+        + '<div class="office-request-details">'
+        + '<div class="office-pr-banner"><div class="title">Purchase Request</div><div class="sub">OSLOB, CEBU</div><div class="lgu">LGU</div></div>'
+        + '<table class="office-pr-meta">'
+        + '<tr><td class="label">Department:</td><td colspan="4">MAYOR\'S OFFICE</td></tr>'
+        + '<tr><td class="label">Section:</td><td colspan="4">' + escapeHtml(request.section || request.officeCode || "-") + '</td></tr>'
+        + '</table>'
+        + '<table class="office-pr-table">'
+        + '<thead><tr><th>Qty</th><th>Unit</th><th>Item Description</th><th>Unit Cost</th><th>Estimated Cost</th></tr></thead>'
+        + '<tbody>' + itemRows + '</tbody>'
+        + '</table>'
+        + '<div class="office-pr-purpose"><strong>Purpose:</strong> ' + purpose + '</div>'
+        + '<table class="office-pr-sign-table">'
+        + '<tr><th class="left-label"></th><th class="office-pr-sign-title">Requested By:</th><th class="office-pr-sign-title">Approved By:</th></tr>'
+        + '<tr><td class="left-label">Signature:</td><td><div class="office-pr-signature-row">' + requestedSignatureView + '</div></td><td><div class="office-pr-signature-row"></div></td></tr>'
+        + '<tr><td class="left-label">Printed Name:</td><td class="office-pr-name-cell">' + requestedBy + '</td><td class="office-pr-name-cell">' + MAYOR_PRINTED_NAME + '</td></tr>'
+        + '<tr><td class="left-label">Designation:</td><td class="office-pr-designation-cell">' + requestedDesignation + '</td><td class="office-pr-designation-cell">' + MAYOR_DESIGNATION + '</td></tr>'
+        + '</table>'
+        + '<div class="office-pr-total">Grand Total: ' + escapeHtml(request.grandTotalFormatted || "-") + '</div>'
+        + (isApproved
+          ? '<div class="office-budget-approval-area">'
+            + '<div class="office-budget-approval-overlay">'
+            + '<div class="office-budget-approval-stamp">' + (budgetStampView || budgetStampText) + '</div>'
+            + '<div class="office-budget-approval-signature">' + budgetSignatureView + '</div>'
+            + '</div>'
+            + '</div>'
+          : '')
+        + '</div>'
+        + '</div>';
+    }
+
+    function setAllOfficeRequestDetailsCollapsed(collapsed) {
+      officeRequestsList.querySelectorAll(".office-request-details").forEach((panel) => {
+        panel.classList.toggle("hidden", collapsed);
+      });
+    }
+
+    function closeOfficeRequestsModal() {
+      officeRequestsModal.classList.add("hidden");
+    }
+
+    function openRegisterModal() {
+      registerStatus.textContent = "";
+      registerModal.classList.remove("hidden");
+    }
+
+    function closeRegisterModal() {
+      registerModal.classList.add("hidden");
+    }
+
+    function fillOfficeSelect(element) {
+      element.innerHTML = "";
+      offices.forEach((office) => {
+        const option = document.createElement("option");
+        option.value = office.code;
+        option.textContent = office.name + " (" + office.code + ")";
+        element.appendChild(option);
+      });
+    }
+
+    function formatAmount(value) {
+      return "\u20b1 " + value.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function parseAmount(value) {
+      const num = parseFloat(String(value).replace(/[^\d.]/g, ""));
+      return Number.isFinite(num) ? num : 0;
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function cleanDisplayText(value) {
+      let text = String(value == null ? "" : value);
+      const scriptMarkers = [
+        "function printApprovedRequest(",
+        "function renderDashboard(",
+        "function openApprovalModal(",
+        "requestInfo.innerHTML",
+        "escapeHtml(cleanDisplayText(request.id))",
+        "window.openApprovalModal",
+        "window.printApprovedRequest"
+      ];
+
+      let cutAt = text.length;
+      scriptMarkers.forEach((marker) => {
+        const idx = text.indexOf(marker);
+        if (idx >= 0 && idx < cutAt) {
+          cutAt = idx;
+        }
+      });
+
+      if (cutAt < text.length) {
+        text = text.slice(0, cutAt);
+      }
+
+      text = text.replace(/Approved Stamp\s*Budget Office Signature\s*Budget Office Signature/gi, "");
+      text = text.replace(/[\r\n\t]+/g, " ").trim();
+      if (/^[\s'"`;:{}()\[\]\\,+\-/*=<>.!?]+$/.test(text)) {
+        return "";
+      }
+      return text;
+    }
+
+    function normalizeRequestStatus(statusValue) {
+      const raw = cleanDisplayText(statusValue).toLowerCase();
+      if (raw.includes("approved")) {
+        return "approved";
+      }
+      if (raw.includes("rejected")) {
+        return "rejected";
+      }
+      return "pending";
+    }
+
+    function shouldDropCorruptedRequest(request) {
+      const blob = JSON.stringify(request == null ? {} : request);
+      const lowered = blob.toLowerCase();
+      return lowered.includes("function printapprovedrequest(")
+        || lowered.includes("function renderdashboard(")
+        || lowered.includes("function openapprovalmodal(")
+        || lowered.includes("window.printapprovedrequest")
+        || lowered.includes("requestinfo.innerhtml")
+        || lowered.includes("escapehtml(cleandisplaytext(request.id))");
+    }
+
+    function sanitizeRequestRecord(request, index) {
+      const item = request && typeof request === "object" ? request : {};
+      const fallbackId = "PR-UNKNOWN-" + String(index + 1);
+      const cleanedId = cleanDisplayText(item.id || "") || fallbackId;
+      const normalizedItems = Array.isArray(item.items)
+        ? item.items.map((entry) => {
+            const src = entry && typeof entry === "object" ? entry : {};
+            return Object.assign({}, src, {
+              unit: cleanDisplayText(src.unit || ""),
+              description: cleanDisplayText(src.description || ""),
+              unitCost: cleanDisplayText(src.unitCost || ""),
+              unitCostFormatted: cleanDisplayText(src.unitCostFormatted || ""),
+              totalCost: cleanDisplayText(src.totalCost || ""),
+              estimatedCost: cleanDisplayText(src.estimatedCost || ""),
+              totalCostFormatted: cleanDisplayText(src.totalCostFormatted || "")
+            });
+          })
+        : [];
+
+      return Object.assign({}, item, {
+        id: cleanedId,
+        status: normalizeRequestStatus(item.status),
+        officeName: cleanDisplayText(item.officeName || ""),
+        officeCode: cleanDisplayText(item.officeCode || ""),
+        section: cleanDisplayText(item.section || ""),
+        timestamp: cleanDisplayText(item.timestamp || ""),
+        purpose: cleanDisplayText(item.purpose || ""),
+        requestedBy: cleanDisplayText(item.requestedBy || ""),
+        printedName: cleanDisplayText(item.printedName || ""),
+        designation: cleanDisplayText(item.designation || ""),
+        grandTotalFormatted: cleanDisplayText(item.grandTotalFormatted || ""),
+        approvalDate: cleanDisplayText(item.approvalDate || ""),
+        rejectionDate: cleanDisplayText(item.rejectionDate || ""),
+        approvedBy: cleanDisplayText(item.approvedBy || ""),
+        rejectedBy: cleanDisplayText(item.rejectedBy || ""),
+        budgetOfficer: cleanDisplayText(item.budgetOfficer || ""),
+        budgetDecisionDate: cleanDisplayText(item.budgetDecisionDate || ""),
+        budgetStamp: cleanDisplayText(item.budgetStamp || ""),
+        items: normalizedItems
+      });
+    }
+
+    function pesoCell() {
+      return '<div class="peso-wrap">'
+        + '<span class="peso-sign">&#8369;</span>'
+        + '<input class="input unit-cost" type="number" min="0" step="0.01" style="flex:1;" />'
+        + '</div>';
+    }
+
+    function rowTemplate() {
+      const row = document.createElement("tr");
+      row.innerHTML =
+        '<td class="items-cell"><input class="input qty" type="number" min="0" step="1" /></td>'
+        + '<td class="items-cell"><input class="input" type="text" value="pcs" /></td>'
+        + '<td class="items-cell"><input class="input" type="text" /></td>'
+        + '<td class="items-cell">' + pesoCell() + '</td>'
+        + '<td class="items-cell"><input class="input row-total" type="text" readonly /></td>';
+      return row;
+    }
+
+    function recalculateTotals() {
+      let total = 0;
+      Array.from(itemsBody.rows).forEach((row) => {
+        const qtyInput = row.querySelector(".qty");
+        const unitCostInput = row.querySelector(".unit-cost");
+        const rowTotalInput = row.querySelector(".row-total");
+        const rowTotal = parseAmount(qtyInput.value) * parseAmount(unitCostInput.value);
+
+        rowTotalInput.value = rowTotal > 0 ? formatAmount(rowTotal) : "";
+        total += rowTotal;
+      });
+      grandTotal.value = formatAmount(total);
+    }
+
+    function setFormEnabled(enabled) {
+      const fields = document.querySelectorAll("#prTable input, #prTable textarea, #prTable select");
+      fields.forEach((field) => {
+        if (field.id === "designation") {
+          field.disabled = true;
+        } else {
+          field.disabled = !enabled;
+        }
+      });
+
+      addRowBtn.disabled = !enabled;
+      removeRowBtn.disabled = !enabled;
+      applySignatureBtn.disabled = !enabled;
+    }
+
+    function clearRequestedSignature() {
+      requestedSignatureImg.src = "";
+      requestedSignatureImg.classList.remove("active");
+    }
+
+    function removeAppliedSignature(showStatus) {
+      clearRequestedSignature();
+      if (showStatus) {
+        signatureStatus.textContent = "Signature removed from form.";
+      }
+    }
+
+    function clearRequestFormAfterSend() {
+      itemsBody.innerHTML = "";
+      itemsBody.appendChild(rowTemplate());
+      itemsBody.appendChild(rowTemplate());
+      purposeField.value = "";
+      requestedByInput.value = "";
+      printedNameInput.value = "";
+      clearRequestedSignature();
+      recalculateTotals();
+    }
+
+    const sigCtx = signatureCanvas.getContext("2d");
+    const signaturePadHeight = 96;
+    let signaturePadDpr = 1;
+    let isDrawing = false;
+    let hasDrawnStroke = false;
+
+    function resizeSignatureCanvas() {
+      const snapshot = signatureCanvas.toDataURL("image/png");
+      const width = Math.max(signatureCanvas.clientWidth, 280);
+      signaturePadDpr = Math.max(window.devicePixelRatio || 1, 1);
+      signatureCanvas.width = Math.floor(width * signaturePadDpr);
+      signatureCanvas.height = Math.floor(signaturePadHeight * signaturePadDpr);
+      signatureCanvas.style.width = width + "px";
+      signatureCanvas.style.height = signaturePadHeight + "px";
+      sigCtx.setTransform(1, 0, 0, 1, 0, 0);
+      sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      sigCtx.scale(signaturePadDpr, signaturePadDpr);
+
+      if (snapshot && snapshot !== "data:,") {
+        const img = new Image();
+        img.onload = () => {
+          sigCtx.clearRect(0, 0, width, signaturePadHeight);
+          sigCtx.drawImage(img, 0, 0, width, signaturePadHeight);
+        };
+        img.src = snapshot;
+      }
+
+      sigCtx.lineCap = "round";
+      sigCtx.lineJoin = "round";
+      sigCtx.strokeStyle = "#111";
+      sigCtx.lineWidth = 1.1;
+    }
+
+    function getCanvasPoint(event) {
+      const rect = signatureCanvas.getBoundingClientRect();
+      const scaleX = signatureCanvas.clientWidth / rect.width;
+      const scaleY = signatureCanvas.clientHeight / rect.height;
+      return {
+        x: (event.clientX - rect.left) * scaleX,
+        y: (event.clientY - rect.top) * scaleY
+      };
+    }
+
+    function startDraw(event) {
+      isDrawing = true;
+      signatureCanvas.setPointerCapture(event.pointerId);
+      const pt = getCanvasPoint(event);
+      sigCtx.beginPath();
+      sigCtx.moveTo(pt.x, pt.y);
+      sigCtx.lineTo(pt.x + 0.01, pt.y + 0.01);
+      sigCtx.stroke();
+      event.preventDefault();
+    }
+
+    function drawMove(event) {
+      if (!isDrawing) return;
+      const pt = getCanvasPoint(event);
+      sigCtx.lineTo(pt.x, pt.y);
+      sigCtx.stroke();
+      hasDrawnStroke = true;
+      event.preventDefault();
+    }
+
+    function endDraw(event) {
+      if (!isDrawing) return;
+      isDrawing = false;
+      sigCtx.closePath();
+      signatureCanvas.releasePointerCapture(event.pointerId);
+      event.preventDefault();
+    }
+
+    function clearSignaturePad(showStatus = true) {
+      sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      hasDrawnStroke = false;
+      if (showStatus) {
+        officeDashStatus.textContent = "Signature pad cleared.";
+      }
+    }
+
+    function refreshOfficeDashPreview(signatureData) {
+      if (!signatureData) {
+        officeDashPreview.classList.remove("has-image");
+        officeDashPreviewImg.src = "";
+        officeDashPreviewText.textContent = "No saved signature yet";
+        return;
+      }
+
+      officeDashPreviewImg.src = signatureData;
+      officeDashPreview.classList.add("has-image");
+      officeDashPreviewText.textContent = "";
+    }
+
+    function saveDrawnSignature() {
+      const session = getSession();
+      if (!session || session.role !== "office") {
+        officeDashStatus.textContent = "Login as an office account first.";
+        return;
+      }
+
+      if (!hasDrawnStroke) {
+        officeDashStatus.textContent = "Draw your signature first.";
+        return;
+      }
+
+      const users = getUsers();
+      const account = users[session.officeCode];
+      if (!account) {
+        officeDashStatus.textContent = "Office account not found.";
+        return;
+      }
+
+      const signatureData = signatureCanvas.toDataURL("image/png");
+      account.signatureData = signatureData;
+      saveUsers(users);
+      saveOfficeSignatureBackup(session.officeCode, signatureData);
+      refreshOfficeDashPreview(signatureData);
+      clearRequestedSignature();
+      officeDashStatus.textContent = "Signature saved. Click Apply Signature to place it in the form.";
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Unable to load image."));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error("Unable to read image file."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function trimTransparentBounds(ctx, width, height) {
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const pixels = imgData.data;
+      let minX = width;
+      let minY = height;
+      let maxX = -1;
+      let maxY = -1;
+
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+          const idx = (y * width + x) * 4;
+          if (pixels[idx + 3] > 0) {
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+
+      if (maxX < minX || maxY < minY) {
+        return null;
+      }
+
+      return {
+        x: minX,
+        y: minY,
+        width: maxX - minX + 1,
+        height: maxY - minY + 1
+      };
+    }
+
+    async function createTransparentSignatureFromUpload(file) {
+      const sourceImg = await loadImageFromFile(file);
+      const maxWidth = 900;
+      const scale = sourceImg.width > maxWidth ? maxWidth / sourceImg.width : 1;
+      const width = Math.max(1, Math.round(sourceImg.width * scale));
+      const height = Math.max(1, Math.round(sourceImg.height * scale));
+
+      const workCanvas = document.createElement("canvas");
+      workCanvas.width = width;
+      workCanvas.height = height;
+      const workCtx = workCanvas.getContext("2d");
+      workCtx.drawImage(sourceImg, 0, 0, width, height);
+
+      const imageData = workCtx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        const sat = max === 0 ? 0 : (max - min) / max;
+
+        if (lum > 245 && sat < 0.18) {
+          data[i + 3] = 0;
+          continue;
+        }
+
+        let alpha = (235 - lum) * 3.2 + sat * 35;
+        if (alpha < 18) {
+          alpha = 0;
+        } else if (alpha > 255) {
+          alpha = 255;
+        }
+
+        data[i] = 20;
+        data[i + 1] = 20;
+        data[i + 2] = 20;
+        data[i + 3] = alpha;
+      }
+
+      workCtx.putImageData(imageData, 0, 0);
+      const bounds = trimTransparentBounds(workCtx, width, height);
+      if (!bounds) {
+        throw new Error("No signature detected.");
+      }
+
+      const pad = 4;
+      const outCanvas = document.createElement("canvas");
+      outCanvas.width = bounds.width + pad * 2;
+      outCanvas.height = bounds.height + pad * 2;
+      const outCtx = outCanvas.getContext("2d");
+      outCtx.drawImage(
+        workCanvas,
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        pad,
+        pad,
+        bounds.width,
+        bounds.height
+      );
+
+      return outCanvas.toDataURL("image/png");
+    }
+
+    async function saveUploadedSignature() {
+      const session = getSession();
+      if (!session || session.role !== "office") {
+        officeDashStatus.textContent = "Login as an office account first.";
+        return;
+      }
+
+      const file = signatureUpload.files[0];
+      if (!file) {
+        officeDashStatus.textContent = "Select an image file first.";
+        return;
+      }
+
+      if (!file.type || !file.type.startsWith("image/")) {
+        officeDashStatus.textContent = "Please upload a valid image file.";
+        return;
+      }
+
+      const users = getUsers();
+      const account = users[session.officeCode];
+      if (!account) {
+        officeDashStatus.textContent = "Office account not found.";
+        return;
+      }
+
+      officeDashStatus.textContent = "Processing uploaded signature...";
+
+      try {
+        const signatureData = await createTransparentSignatureFromUpload(file);
+        account.signatureData = signatureData;
+        saveUsers(users);
+        saveOfficeSignatureBackup(session.officeCode, signatureData);
+        refreshOfficeDashPreview(signatureData);
+        clearRequestedSignature();
+        signatureUpload.value = "";
+        officeDashStatus.textContent = "Uploaded signature saved. Click Apply Signature to place it in the form.";
+      } catch (error) {
+        officeDashStatus.textContent = "Could not process signature image. Use a clearer image.";
+      }
+    }
+
+    function applyOfficeSignature(showStatus) {
+      const session = getSession();
+      if (!session || session.role !== "office") {
+        clearRequestedSignature();
+        if (showStatus) {
+          signatureStatus.textContent = "Login as an office account first.";
+        }
+        return;
+      }
+
+      const users = getUsers();
+      const account = users[session.officeCode];
+      if (!account || !account.signatureData) {
+        clearRequestedSignature();
+        if (showStatus) {
+          signatureStatus.textContent = "No registered signature found for this office.";
+        }
+        return;
+      }
+
+      requestedSignatureImg.src = account.signatureData;
+      requestedSignatureImg.classList.add("active");
+      if (showStatus) {
+        signatureStatus.textContent = "Signature Applied.";
+        officeDashStatus.textContent = "Signature Applied.";
+      }
+    }
+
+    function renderAdminDashboard() {
+      const users = getUsers();
+      const entries = Object.values(users);
+      const pgCards = document.getElementById("adminPgCards");
+      const requestsGrid = document.getElementById("adminRequestsGrid");
+      const statBar = document.getElementById("adminStatBar");
+
+      if (statBar) {
+        const requests = getRequests();
+        const pendingCount = requests.filter(r => r.status === "pending").length;
+        statBar.innerHTML = '<div class="admin-stat">'
+          + '<div class="admin-stat-num">' + entries.length + '</div>'
+          + '<div class="admin-stat-label">Registered Offices</div>'
+          + '</div>'
+          + '<div class="admin-stat">'
+          + '<div class="admin-stat-num">' + requests.length + '</div>'
+          + '<div class="admin-stat-label">Total Requests</div>'
+          + '</div>'
+          + '<div class="admin-stat">'
+          + '<div class="admin-stat-num">' + pendingCount + '</div>'
+          + '<div class="admin-stat-label">Pending Requests</div>'
+          + '</div>';
+      }
+
+      if (!pgCards) return;
+
+      if (entries.length === 0) {
+        pgCards.innerHTML = '<div class="admin-empty">No office registrations yet.</div>';
+      } else {
+        pgCards.innerHTML = entries
+          .map((entry) => '<div class="admin-pg-card">'
+            + '<strong>Office Code:</strong> ' + entry.officeCode + '<br />'
+            + '<strong>Office Name:</strong> ' + entry.officeName + '<br />'
+            + '<strong>Password:</strong> ' + entry.password
+            + '</div>')
+          .join("");
+      }
+
+      // Render submitted requests
+      if (!requestsGrid) return;
+
+      const requests = getRequests();
+      if (requests.length === 0) {
+        requestsGrid.innerHTML = '<div class="admin-empty">No purchase requests submitted yet.</div>';
+      } else {
+        requestsGrid.innerHTML = requests
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+          .map((request) => {
+            const statusStyle = request.status === "pending" ? "color: #ff9800;"
+              : request.status === "approved" ? "color: #4caf50;"
+              : request.status === "rejected" ? "color: #f44336;": "color: #666;";
+            
+            return '<div class="admin-pg-card">'
+              + '<strong>Request ID:</strong> ' + escapeHtml(request.id) + '<br />'
+              + '<strong>Office:</strong> ' + escapeHtml(request.officeName) + ' (' + escapeHtml(request.officeCode) + ')<br />'
+              + '<strong>Section:</strong> ' + escapeHtml(request.section) + '<br />'
+              + '<strong>Items:</strong> ' + request.items.length + '<br />'
+              + '<strong>Grand Total:</strong> ' + escapeHtml(request.grandTotalFormatted) + '<br />'
+              + '<strong>Submitted:</strong> ' + escapeHtml(request.timestamp) + '<br />'
+              + '<strong style="' + statusStyle + '">Status:</strong> <span style="' + statusStyle + '">' + (request.status.toUpperCase()) + '</span>'
+              + '</div>';
+          })
+          .join("");
+      }
+    }
+
+    function renderBudgetDashboard() {
+      const requests = getRequests();
+      const pendingRequests = requests.filter(r => r.status === "pending");
+      const processedRequests = requests.filter(r => r.status !== "pending");
+
+      const statBar = document.getElementById("budgetStatBar");
+      if (statBar) {
+        statBar.innerHTML = '<div class="admin-stat">'
+          + '<div class="admin-stat-num">' + pendingRequests.length + '</div>'
+          + '<div class="admin-stat-label">Pending Requests</div>'
+          + '</div>'
+          + '<div class="admin-stat">'
+          + '<div class="admin-stat-num">' + processedRequests.length + '</div>'
+          + '<div class="admin-stat-label">Processed Requests</div>'
+          + '</div>';
+      }
+
+      const pendingGrid = document.getElementById("budgetPendingGrid");
+      if (pendingGrid) {
+        if (pendingRequests.length === 0) {
+          pendingGrid.innerHTML = '<div class="admin-empty">No pending requests to review.</div>';
+        } else {
+          pendingGrid.innerHTML = pendingRequests
+            .map((request) => createBudgetRequestCard(request, true))
+            .join("");
+          pendingGrid.querySelectorAll('.js-budget-review').forEach((button) => {
+            button.addEventListener('click', () => {
+              const token = button.getAttribute('data-request-token') || '';
+              openBudgetApprovalModal(decodeURIComponent(token));
+            });
+          });
+        }
+      }
+
+      const processedGrid = document.getElementById("budgetProcessedGrid");
+      if (processedGrid) {
+        if (processedRequests.length === 0) {
+          processedGrid.innerHTML = '<div class="admin-empty">No processed requests yet.</div>';
+        } else {
+          processedGrid.innerHTML = processedRequests
+            .sort((a, b) => new Date(b.approvalDate || b.timestamp) - new Date(a.approvalDate || a.timestamp))
+            .map((request) => createBudgetRequestCard(request, false))
+            .join("");
+        }
+      }
+    }
+
+    function createBudgetRequestCard(request, isPending) {
+      const statusStyle = request.status === "approved" ? "color: #4caf50;"
+        : request.status === "rejected" ? "color: #f44336;": "color: #666;";
+      
+      let content = '<div class="admin-pg-card">'
+        + '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(request.id)) + '<br />'
+        + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(request.officeName)) + ' (' + escapeHtml(cleanDisplayText(request.officeCode)) + ')<br />'
+        + '<strong>Section:</strong> ' + escapeHtml(cleanDisplayText(request.section)) + '<br />'
+        + '<strong>Items:</strong> ' + request.items.length + '<br />'
+        + '<strong>Grand Total:</strong> ' + escapeHtml(cleanDisplayText(request.grandTotalFormatted)) + '<br />'
+        + '<strong>Submitted:</strong> ' + escapeHtml(cleanDisplayText(request.timestamp)) + '<br />';
+
+      if (isPending) {
+        const requestToken = encodeURIComponent(String(request.id || ""));
+        content += '<button class="btn btn-primary js-budget-review" style="margin-top: 10px; width: 100%;" data-request-token="' + requestToken + '">Review & Approve</button>';
+      } else {
+        content += '<strong style="' + statusStyle + '">Status:</strong> <span style="' + statusStyle + '">' + request.status.toUpperCase() + '</span><br />'
+          + '<strong>Approved Date:</strong> ' + escapeHtml(cleanDisplayText(request.approvalDate || 'N/A')) + '<br />';
+        if (request.approvedBy) {
+          content += '<strong>Approved By:</strong> ' + escapeHtml(cleanDisplayText(request.approvedBy)) + '<br />';
+        }
+      }
+
+      content += '</div>';
+      return content;
+    }
+
+    function openBudgetApprovalModal(requestId) {
+      const requests = getRequests();
+      const request = requests.find(r => r.id === requestId);
+      
+      if (!request) {
+        alert("Request not found.");
+        return;
+      }
+
+      // Set the current request for approval
+      window.currentBudgetRequest = request;
+
+      // Display request info
+      let infoHtml = '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(request.id)) + '<br />'
+        + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(request.officeName)) + ' (' + escapeHtml(cleanDisplayText(request.officeCode)) + ')<br />'
+        + '<strong>Section:</strong> ' + escapeHtml(cleanDisplayText(request.section)) + '<br />'
+        + '<strong>Grand Total:</strong> ' + escapeHtml(cleanDisplayText(request.grandTotalFormatted)) + '<br />'
+        + '<strong>Items:</strong> ' + request.items.length + '<br />'
+        + '<strong>Submitted:</strong> ' + escapeHtml(cleanDisplayText(request.timestamp)) + '<br />';
+
+      budgetRequestInfo.innerHTML = infoHtml;
+
+      // Set today's date as default
+      budgetApprovalDate.valueAsDate = new Date();
+      budgetSigStatus.textContent = "";
+      budgetApprovalStatus.textContent = "";
+      window.budgetSignatureData = "";
+      if (budgetSignatureUpload) {
+        budgetSignatureUpload.value = "";
+      }
+
+      budgetApprovalModal.classList.remove("hidden");
+    }
+
+    function closeBudgetApprovalModal() {
+      budgetApprovalModal.classList.add("hidden");
+      window.currentBudgetRequest = null;
+    }
+
+    async function saveBudgetUploadedSignature() {
+      const file = budgetSignatureUpload ? budgetSignatureUpload.files[0] : null;
+      if (!file) {
+        budgetSigStatus.textContent = "Select an image file first.";
+        return;
+      }
+
+      if (!file.type || !file.type.startsWith("image/")) {
+        budgetSigStatus.textContent = "Please upload a valid image file.";
+        return;
+      }
+
+      budgetSigStatus.textContent = "Processing uploaded signature...";
+      try {
+        const signatureData = await createTransparentSignatureFromUpload(file);
+        window.budgetSignatureData = signatureData;
+        if (budgetSignatureUpload) {
+          budgetSignatureUpload.value = "";
+        }
+        budgetSigStatus.textContent = "Uploaded signature saved with transparent background.";
+      } catch (error) {
+        budgetSigStatus.textContent = "Could not process signature image. Use a clearer image.";
+      }
+    }
+
+    function approveBudgetRequest() {
+      if (!window.budgetSignatureData) {
+        budgetApprovalStatus.textContent = "Please save your signature first.";
+        return;
+      }
+
+      if (!budgetApprovalDate.value) {
+        budgetApprovalStatus.textContent = "Please select a date.";
+        return;
+      }
+
+      const request = window.currentBudgetRequest;
+      const requests = getRequests();
+      const requestIndex = requests.findIndex(r => r.id === request.id);
+
+      if (requestIndex === -1) {
+        budgetApprovalStatus.textContent = "Request not found.";
+        return;
+      }
+
+      // Update request with approval info
+      requests[requestIndex].status = "approved";
+      requests[requestIndex].officeStatus = "for_mayor";
+      requests[requestIndex].approvalDate = budgetApprovalDate.value;
+      requests[requestIndex].approvedBy = (getSession().officerName || "Budget Officer");
+      requests[requestIndex].budgetSignature = window.budgetSignatureData;
+      requests[requestIndex].budgetSignatureData = window.budgetSignatureData;
+
+      saveRequests(requests);
+      budgetApprovalStatus.textContent = "Request approved successfully!";
+      
+      setTimeout(() => {
+        closeBudgetApprovalModal();
+        renderBudgetDashboard();
+      }, 1500);
+    }
+
+    function rejectBudgetRequest() {
+      if (!budgetApprovalDate.value) {
+        budgetApprovalStatus.textContent = "Please select a date.";
+        return;
+      }
+
+      const request = window.currentBudgetRequest;
+      const requests = getRequests();
+      const requestIndex = requests.findIndex(r => r.id === request.id);
+
+      if (requestIndex === -1) {
+        budgetApprovalStatus.textContent = "Request not found.";
+        return;
+      }
+
+      // Update request with rejection info
+      requests[requestIndex].status = "rejected";
+      requests[requestIndex].officeStatus = "rejected_budget";
+      requests[requestIndex].rejectionDate = budgetApprovalDate.value;
+      requests[requestIndex].rejectedBy = (getSession().officerName || "Budget Officer");
+
+      saveRequests(requests);
+      budgetApprovalStatus.textContent = "Request rejected.";
+      
+      setTimeout(() => {
+        closeBudgetApprovalModal();
+        renderBudgetDashboard();
+      }, 1500);
+    }
+
+    function renderSession() {
+      const session = getSession();
+      const appRoot = document.getElementById("appRoot");
+      const adminPage = document.getElementById("adminPage");
+
+      if (!session) {
+        appRoot.classList.remove("hidden");
+        adminPage.classList.add("hidden");
+        budgetPage.classList.add("hidden");
+        sessionInfo.textContent = "Not logged in";
+        officeAuthSection.classList.remove("hidden");
+        officeDashboardSection.classList.add("hidden");
+        sectionOffice.value = "";
+        designation.value = "";
+        signatureStatus.textContent = "";
+        officeDashStatus.textContent = "";
+        refreshOfficeDashPreview("");
+        clearSignaturePad(false);
+        clearRequestedSignature();
+        setFormEnabled(false);
+        return;
+      }
+
+      if (session.role === "office") {
+        appRoot.classList.remove("hidden");
+        adminPage.classList.add("hidden");
+        budgetPage.classList.add("hidden");
+        sessionInfo.textContent = "Office User: " + session.officeCode;
+        officeAuthSection.classList.add("hidden");
+        officeDashboardSection.classList.remove("hidden");
+        setFormEnabled(true);
+        sectionOffice.value = session.officeCode;
+        designation.value = session.officeCode;
+        const users = getUsers();
+        const account = users[session.officeCode];
+        let signatureData = account && account.signatureData ? account.signatureData : "";
+        if (!signatureData) {
+          signatureData = getOfficeSignatureBackup(session.officeCode);
+          if (signatureData && account) {
+            account.signatureData = signatureData;
+            saveUsers(users);
+          }
+        }
+        refreshOfficeDashPreview(signatureData);
+        clearRequestedSignature();
+      } else if (session.role === "admin") {
+        appRoot.classList.add("hidden");
+        adminPage.classList.remove("hidden");
+        budgetPage.classList.add("hidden");
+        officeDashboardSection.classList.add("hidden");
+        renderAdminDashboard();
+      } else if (session.role === "budget") {
+        appRoot.classList.add("hidden");
+        adminPage.classList.add("hidden");
+        budgetPage.classList.remove("hidden");
+        officeDashboardSection.classList.add("hidden");
+        budgetOfficerBadge.textContent = (session.officerName || "Budget Officer").toUpperCase();
+        renderBudgetDashboard();
+      }
+    }
+
+    const SVG_EYE = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const SVG_EYE_SLASH = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+    function togglePw(id, btn) {
+      const inp = document.getElementById(id);
+      if (inp.type === "password") {
+        inp.type = "text";
+        btn.innerHTML = SVG_EYE_SLASH;
+      } else {
+        inp.type = "password";
+        btn.innerHTML = SVG_EYE;
+      }
+    }
+
+    function registerOffice() {
+      registerStatus.textContent = "";
+      const officeCode = regOffice.value;
+      const password = regPassword.value.trim();
+
+      if (!password) {
+        registerStatus.textContent = "Password is required.";
+        return;
+      }
+
+      const users = getUsers();
+      if (users[officeCode]) {
+        registerStatus.textContent = "This office is already registered.";
+        return;
+      }
+
+      const office = offices.find((item) => item.code === officeCode);
+      users[officeCode] = {
+        officeCode: office.code,
+        officeName: office.name,
+        password: password,
+        signatureData: ""
+      };
+
+      saveUsers(users);
+      registerStatus.textContent = "Registration successful.";
+      loginOffice.value = officeCode;
+      loginPassword.value = "";
+      regPassword.value = "";
+      renderAdminDashboard();
+      closeRegisterModal();
+    }
+
+    function loginOfficeUser() {
+      loginStatus.textContent = "";
+      const officeCode = loginOffice.value;
+      const password = loginPassword.value;
+
+      if (officeCode === "ADMIN") {
+        if (password !== ADMIN_PASSWORD) {
+          loginStatus.textContent = "Invalid admin password.";
+          return;
+        }
+        saveSession({ role: "admin" });
+        loginPassword.value = "";
+        renderSession();
+        return;
+      }
+
+      const users = getUsers();
+      const account = users[officeCode];
+
+      if (!account || account.password !== password) {
+        loginStatus.textContent = "Invalid office or password.";
+        return;
+      }
+
+      saveSession({ role: "office", officeCode: officeCode });
+      loginPassword.value = "";
+      renderSession();
+    }
+
+
+
+    function logout() {
+      clearSession();
+      renderSession();
+    }
+
+    fillOfficeSelect(sectionOffice);
+    fillOfficeSelect(regOffice);
+    fillOfficeSelect(loginOffice);
+    const adminOption = document.createElement("option");
+    adminOption.value = "ADMIN";
+    adminOption.textContent = "System Administrator (Admin)";
+    loginOffice.appendChild(adminOption);
+
+    regOffice.value = "BPLO";
+    loginOffice.value = "BPLO";
+    sectionOffice.value = "";
+    designation.value = "";
+
+    addRowBtn.addEventListener("click", () => {
+      itemsBody.appendChild(rowTemplate());
+      recalculateTotals();
+    });
+
+    removeRowBtn.addEventListener("click", () => {
+      if (itemsBody.rows.length > 1) {
+        itemsBody.removeChild(itemsBody.lastElementChild);
+        recalculateTotals();
+      }
+    });
+
+    itemsBody.addEventListener("input", (event) => {
+      if (event.target.classList.contains("qty") || event.target.classList.contains("unit-cost")) {
+        recalculateTotals();
+      }
+    });
+
+    sectionOffice.addEventListener("change", () => {
+      designation.value = sectionOffice.value;
+    });
+
+    signatureCanvas.addEventListener("pointerdown", startDraw);
+    signatureCanvas.addEventListener("pointermove", drawMove);
+    signatureCanvas.addEventListener("pointerup", endDraw);
+    signatureCanvas.addEventListener("pointercancel", endDraw);
+    signatureCanvas.addEventListener("pointerleave", endDraw);
+
+    // Budget Dashboard Event Listeners
+    closeBudgetApprovalModalBtn.addEventListener("click", closeBudgetApprovalModal);
+    saveBudgetUploadedSigBtn.addEventListener("click", saveBudgetUploadedSignature);
+    approveBudgetBtn.addEventListener("click", approveBudgetRequest);
+    rejectBudgetBtn.addEventListener("click", rejectBudgetRequest);
+    budgetApprovalModal.addEventListener("click", (event) => {
+      if (event.target === budgetApprovalModal) {
+        closeBudgetApprovalModal();
+      }
+    });
+
+    registerOfficeBtn.addEventListener("click", registerOffice);
+    loginOfficeBtn.addEventListener("click", loginOfficeUser);
+    openRegisterModalBtn.addEventListener("click", openRegisterModal);
+    closeRegisterModalBtn.addEventListener("click", closeRegisterModal);
+    applySignatureBtn.addEventListener("click", () => applyOfficeSignature(true));
+    removeSignatureBtn.addEventListener("click", () => removeAppliedSignature(true));
+    saveSignatureBtn.addEventListener("click", saveDrawnSignature);
+    clearSignatureBtn.addEventListener("click", clearSignaturePad);
+    saveUploadedSignatureBtn.addEventListener("click", saveUploadedSignature);
+    viewSubmittedRequestsBtn.addEventListener("click", openOfficeRequestsModal);
+    sendToBudgetBtn.addEventListener("click", sendRequestToBudget);
+    logoutBtn.addEventListener("click", logout);
+    registerModal.addEventListener("click", (event) => {
+      if (event.target === registerModal) {
+        closeRegisterModal();
+      }
+    });
+    closeOfficeRequestsModalBtn.addEventListener("click", closeOfficeRequestsModal);
+    minimizeAllRequestsBtn.addEventListener("click", () => {
+      setAllOfficeRequestDetailsCollapsed(true);
+    });
+    expandAllRequestsBtn.addEventListener("click", () => {
+      setAllOfficeRequestDetailsCollapsed(false);
+    });
+    closeSendPasswordModalBtn.addEventListener("click", () => {
+      pendingSendContext = null;
+      closeSendPasswordModal();
+      signatureStatus.textContent = "Request sending cancelled.";
+    });
+    cancelSendPasswordBtn.addEventListener("click", () => {
+      pendingSendContext = null;
+      closeSendPasswordModal();
+      signatureStatus.textContent = "Request sending cancelled.";
+    });
+    confirmSendPasswordBtn.addEventListener("click", confirmSendWithPassword);
+    sendPasswordInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        confirmSendWithPassword();
+      }
+    });
+    officeRequestsModal.addEventListener("click", (event) => {
+      if (event.target === officeRequestsModal) {
+        closeOfficeRequestsModal();
+      }
+    });
+    sendPasswordModal.addEventListener("click", (event) => {
+      if (event.target === sendPasswordModal) {
+        pendingSendContext = null;
+        closeSendPasswordModal();
+        signatureStatus.textContent = "Request sending cancelled.";
+      }
+    });
+
+    window.addEventListener("resize", resizeSignatureCanvas);
+
+    async function bootApp() {
+      await initializeServerSync();
+      resizeSignatureCanvas();
+      recalculateTotals();
+      renderSession();
+    }
+
+    bootApp();
+  </script>
+</body>
+</html>

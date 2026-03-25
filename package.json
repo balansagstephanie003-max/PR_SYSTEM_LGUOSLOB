@@ -1,0 +1,48 @@
+{
+  "name": "pr-system-lgu-oslob",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LGU Oslob Purchase Request app with PostgreSQL or SQLite backend sync",
+  "main": "desktop/main.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "desktop:dev": "electron desktop/main.js",
+    "desktop:local": "concurrently -k \"npm:start\" \"wait-on http://localhost:4000 && cross-env APP_START_URL=http://localhost:4000 electron desktop/main.js\"",
+    "desktop:build": "electron-builder --win nsis portable"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.lgu.oslob.prsystem",
+    "productName": "LGU Oslob PR System",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "**/*",
+      "!release/**",
+      "!data/**",
+      "!*.log"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "artifactName": "LGU-Oslob-PR-${version}-${target}.${ext}"
+    }
+  }
+}

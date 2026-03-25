@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Print Purchase Request</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --line: #cfcfcf;
+      --dark: #2f2f2f;
+      --bg: #f7f7f7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: #111;
+      padding: 14px;
+    }
+
+    .toolbar {
+      max-width: 1000px;
+      margin: 0 auto 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .toolbar .meta {
+      font-size: 13px;
+      color: #333;
+    }
+
+    .btn {
+      border: 1px solid #bbb;
+      background: #fff;
+      color: #111;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #f0f0f0;
+    }
+
+    .sheet {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #d8d8d8;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .sheet-banner {
+      margin-top: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #454545;
+      border-radius: 6px;
+      background: linear-gradient(160deg, #2e2e2e 0%, #515151 55%, #2e2e2e 100%);
+      color: #fff;
+      text-align: center;
+      padding: 8px 8px 10px;
+    }
+
+    .sheet-banner .title {
+      font-family: "Playfair Display", serif;
+      font-size: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      line-height: 1.1;
+    }
+
+    .sheet-banner .sub {
+      font-size: 14px;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
+      opacity: 0.95;
+    }
+
+    .sheet-banner .lgu {
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1;
+      opacity: 0.2;
+      letter-spacing: 4px;
+      margin-top: -4px;
+    }
+
+    .items-box {
+      margin-top: 8px;
+      border: 1px dashed #c7c7c7;
+      border-radius: 8px;
+      padding: 8px;
+      background: #fafafa;
+    }
+
+    .sheet-meta {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .sheet-meta td {
+      border: 1px solid #cfcfcf;
+      padding: 5px 6px;
+    }
+
+    .sheet-meta .label {
+      width: 130px;
+      background: linear-gradient(90deg, #353535 0%, #555 100%);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .req-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .req-table th,
+    .req-table td {
+      border: 1px solid #cfcfcf;
+      padding: 5px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .req-table th {
+      background: #f2f2f2;
+      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .sheet-purpose {
+      margin-top: 6px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #f8f8f8;
+      padding: 7px;
+      min-height: 44px;
+      white-space: pre-wrap;
+      font-size: 12px;
+    }
+
+    .sheet-sign-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .sheet-sign-table th,
+    .sheet-sign-table td {
+      border: 1px solid #cfcfcf;
+      padding: 6px;
+      vertical-align: middle;
+    }
+
+    .sheet-sign-table .left-label {
+      width: 130px;
+      background: linear-gradient(90deg, #353535 0%, #555 100%);
+      color: #fff;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .sheet-sign-title {
+      background: #e9edf3;
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .sheet-signature-row {
+      margin-top: 6px;
+      border: 1px dashed #c8c8c8;
+      border-radius: 4px;
+      background: #fafafa;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .sheet-signature-row img {
+      max-width: 100%;
+      max-height: 38px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .sheet-name-cell {
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .sheet-designation-cell {
+      text-align: center;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    .budget-approval-area {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .budget-approval-overlay {
+      position: relative;
+      width: min(460px, 100%);
+      min-height: 140px;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .budget-approval-stamp {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 1;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-align: center;
+      color: #3f3f3f;
+    }
+
+    .budget-approval-stamp img {
+      max-width: 92%;
+      max-height: 118px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .budget-approval-signature {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      padding: 10px;
+    }
+
+    .budget-approval-signature img {
+      max-width: 52%;
+      max-height: 52px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .grand-total {
+      margin-top: 8px;
+      text-align: right;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .empty {
+      border: 1px dashed #bbb;
+      border-radius: 10px;
+      padding: 22px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      background: #fafafa;
+    }
+
+    @media print {
+      @page {
+        size: letter;
+        margin: 0.5in;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        forced-color-adjust: none !important;
+      }
+
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .toolbar {
+        display: none;
+      }
+
+      .sheet {
+        border: none;
+        border-radius: 0;
+        margin: 0;
+        max-width: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div class="meta" id="metaText">Preparing request...</div>
+    <div>
+      <button type="button" class="btn" id="printBtn">Print</button>
+      <button type="button" class="btn" id="closeBtn">Close</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheetRoot"></div>
+
+  <script>
+    const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
+    const API_BASE_URL = window.location.origin + "/api";
+
+    async function apiRequest(path, options) {
+      const response = await fetch(API_BASE_URL + path, options || {});
+      if (!response.ok) {
+        throw new Error("API error: " + response.status);
+      }
+      return response.json();
+    }
+
+    async function initializeServerSync() {
+      try {
+        await apiRequest("/health");
+        const state = await apiRequest("/state");
+        localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(Array.isArray(state.requests) ? state.requests : []));
+      } catch (error) {
+        // Keep local fallback if API is unavailable.
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function cleanDisplayText(value) {
+      return String(value == null ? "" : value).replace(/^';\s*}\s*/i, "").trim();
+    }
+
+    function formatAmount(value) {
+      return "\u20b1 " + Number(value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function normalizeStatus(status) {
+      const value = cleanDisplayText(status).toLowerCase();
+      if (value.includes("approved")) return "approved";
+      if (value.includes("rejected")) return "rejected";
+      return "pending";
+    }
+
+    function getRequests() {
+      const raw = localStorage.getItem(STORAGE_REQUESTS_KEY);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function getRequestIdFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("requestId") || "";
+    }
+
+    function renderItems(items) {
+      if (!Array.isArray(items) || items.length === 0) {
+        return '<div class="items-box"><strong>Items:</strong> None</div>';
+      }
+
+      const rows = items.map((item) => {
+        const unit = escapeHtml(cleanDisplayText(item.unit || ""));
+        const description = escapeHtml(cleanDisplayText(item.description || "-"));
+        const unitCost = escapeHtml(cleanDisplayText(((item.unitCostValue > 0 ? formatAmount(item.unitCostValue) : '') || item.unitCost || item.unitCostFormatted || '-')));
+        const totalCost = escapeHtml(cleanDisplayText(((item.totalCostValue > 0 ? formatAmount(item.totalCostValue) : '') || item.totalCost || item.estimatedCost || item.totalCostFormatted || '-')));
+        return "<tr>"
+          + "<td>" + (item.quantity || "") + "</td>"
+          + "<td>" + unit + "</td>"
+          + "<td>" + description + "</td>"
+          + "<td>" + unitCost + "</td>"
+          + "<td>" + totalCost + "</td>"
+          + "</tr>";
+      }).join("");
+
+      return ""
+        + "<div class=\"items-box\">"
+        + "<strong>Items:</strong>"
+        + "<table class=\"req-table\">"
+        + "<thead><tr><th>Qty</th><th>Unit</th><th>Item Description</th><th>Unit Cost</th><th>Estimated Cost</th></tr></thead>"
+        + "<tbody>" + rows + "</tbody>"
+        + "</table>"
+        + "</div>";
+    }
+
+    function renderRequestSheet(request) {
+      const mayorName = "ATTY. RONALD L. GUAREN";
+      const mayorDesignation = "Municipal Mayor";
+      const purpose = escapeHtml(cleanDisplayText(request.purpose || "-"));
+      const requestedBy = escapeHtml(cleanDisplayText(request.printedName || request.requestedBy || "-"));
+      const requestedDesignation = escapeHtml(cleanDisplayText(request.designation || request.officeCode || "-"));
+      const requestedSignature = request.requestedSignature || "";
+      const mayorSignature = request.mayorStatus === "mayor_approved" ? (request.mayorSignatureData || "") : "";
+      const budgetSignature = request.budgetSignatureData || "";
+      const budgetStampData = request.budgetStampData || "";
+      const budgetStampText = escapeHtml(cleanDisplayText(request.budgetStamp || "BUDGET APPROVED"));
+      const isApproved = normalizeStatus(request.status) === "approved";
+      const requestedSignatureView = requestedSignature
+        ? "<img src=\"" + requestedSignature + "\" alt=\"Requested signature\" />"
+        : "";
+      const mayorSignatureView = mayorSignature
+        ? "<img src=\"" + mayorSignature + "\" alt=\"Mayor signature\" />"
+        : "";
+      const budgetSignatureView = budgetSignature
+        ? "<img src=\"" + budgetSignature + "\" alt=\"Budget signature\" />"
+        : "";
+      const budgetStampView = budgetStampData
+        ? "<img src=\"" + budgetStampData + "\" alt=\"Approved stamp\" />"
+        : budgetStampText;
+
+      return ""
+        + "<div class=\"sheet-banner\"><div class=\"title\">Purchase Request</div><div class=\"sub\">OSLOB, CEBU</div><div class=\"lgu\">LGU</div></div>"
+        + "<table class=\"sheet-meta\">"
+        + "<tr><td class=\"label\">Department:</td><td colspan=\"4\">MAYOR'S OFFICE</td></tr>"
+        + "<tr><td class=\"label\">Section:</td><td colspan=\"4\">" + escapeHtml(cleanDisplayText(request.section || request.officeCode || "-")) + "</td></tr>"
+        + "</table>"
+        + renderItems(request.items)
+        + "<div class=\"sheet-purpose\"><strong>Purpose:</strong> " + purpose + "</div>"
+        + "<table class=\"sheet-sign-table\">"
+        + "<tr><th class=\"left-label\"></th><th class=\"sheet-sign-title\">Requested By:</th><th class=\"sheet-sign-title\">Approved By:</th></tr>"
+        + "<tr><td class=\"left-label\">Signature:</td><td><div class=\"sheet-signature-row\">" + requestedSignatureView + "</div></td><td><div class=\"sheet-signature-row\">" + mayorSignatureView + "</div></td></tr>"
+        + "<tr><td class=\"left-label\">Printed Name:</td><td class=\"sheet-name-cell\">" + requestedBy + "</td><td class=\"sheet-name-cell\">" + mayorName + "</td></tr>"
+        + "<tr><td class=\"left-label\">Designation:</td><td class=\"sheet-designation-cell\">" + requestedDesignation + "</td><td class=\"sheet-designation-cell\">" + mayorDesignation + "</td></tr>"
+        + "</table>"
+        + "<div class=\"grand-total\">Grand Total: " + escapeHtml(cleanDisplayText(request.grandTotalFormatted || "-")) + "</div>"
+        + (isApproved
+          ? "<div class=\"budget-approval-area\">"
+            + "<div class=\"budget-approval-overlay\">"
+            + "<div class=\"budget-approval-stamp\">" + budgetStampView + "</div>"
+            + "<div class=\"budget-approval-signature\">" + budgetSignatureView + "</div>"
+            + "</div>"
+            + "</div>"
+          : "");
+    }
+
+    async function boot() {
+      await initializeServerSync();
+      const requestId = getRequestIdFromQuery();
+      const metaText = document.getElementById("metaText");
+      const sheetRoot = document.getElementById("sheetRoot");
+
+      if (!requestId) {
+        metaText.textContent = "Missing request ID.";
+        sheetRoot.innerHTML = '<div class="empty">No request selected for printing.</div>';
+        return;
+      }
+
+      const request = getRequests().find((entry) => String(entry.id) === String(requestId));
+      if (!request) {
+        metaText.textContent = "Request not found.";
+        sheetRoot.innerHTML = '<div class="empty">The selected request no longer exists.</div>';
+        return;
+      }
+
+      if (normalizeStatus(request.status) !== "approved") {
+        metaText.textContent = "Only approved requests can be printed.";
+        sheetRoot.innerHTML = '<div class="empty">This request is not approved yet.</div>';
+        return;
+      }
+
+      metaText.textContent = "Request ID: " + cleanDisplayText(request.id);
+      sheetRoot.innerHTML = renderRequestSheet(request);
+    }
+
+    document.getElementById("printBtn").addEventListener("click", () => {
+      window.print();
+    });
+
+    document.getElementById("closeBtn").addEventListener("click", () => {
+      window.close();
+    });
+
+    boot();
+  </script>
+</body>
+</html>

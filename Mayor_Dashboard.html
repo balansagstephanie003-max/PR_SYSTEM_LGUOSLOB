@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mayor's Office Dashboard - LGU Oslob</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-1: #7b7b7b;
+      --bg-2: #4e4e4e;
+      --bg-3: #222;
+      --panel: #ffffff;
+      --ink: #1f1f1f;
+      --muted: #666;
+      --line: #d8d8d8;
+      --crimson: #7b1c1c;
+      --crimson-dark: #5a0a0a;
+      --crimson-light: #c44d4d;
+      --pending: #ff9800;
+      --budget-approved: #2e7d32;
+      --mayor-approved: #1565c0;
+      --mayor-declined: #c62828;
+    }
+
+    body {
+      font-family: "Inter", "Segoe UI", sans-serif;
+      min-height: 100vh;
+      color: var(--ink);
+      background: radial-gradient(ellipse at top, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+    }
+
+    .app { min-height: 100vh; display: flex; flex-direction: column; gap: 14px; padding: 14px; }
+
+    .topbar {
+      background: linear-gradient(160deg, var(--crimson-dark) 0%, var(--crimson) 55%, var(--crimson-dark) 100%);
+      border: 1px solid var(--crimson-light);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+    .topbar-logo {
+      width: 54px; height: 54px; object-fit: contain; border-radius: 50%;
+      background: #fff; padding: 3px;
+      box-shadow: inset 0 0 0 2px var(--crimson-light), 0 2px 6px rgba(0,0,0,0.4);
+      flex: 0 0 auto;
+    }
+
+    .topbar-text { color: #fff; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
+    .topbar-text h1 { font-family: "Playfair Display", serif; font-size: 20px; letter-spacing: 0.4px; text-transform: uppercase; }
+    .topbar-text p { font-size: 12px; color: #ffcccc; }
+
+    .badge {
+      background: #ffcccc; color: var(--crimson-dark);
+      font-weight: 700; font-size: 11px; border-radius: 999px;
+      padding: 5px 12px; text-transform: uppercase; letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .content { width: min(1560px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+    .card {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 16px;
+    }
+
+    .btn { border: none; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: "Inter", "Segoe UI", sans-serif; }
+    .btn-dark { background: var(--crimson-dark); color: #fff; }
+    .btn-dark:hover { background: #3e0707; }
+    .btn-light { background: #efefef; color: #111; border: 1px solid #cfcfcf; }
+    .btn-light:hover { background: #e7e7e7; }
+    .btn-blue { background: #1565c0; color: #fff; }
+    .btn-blue:hover { background: #0d47a1; }
+    .btn-red { background: #c62828; color: #fff; }
+    .btn-red:hover { background: #b71c1c; }
+
+    .status-msg { min-height: 18px; margin-top: 8px; color: #555; font-size: 12px; }
+
+    .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .setup-box { border: 1px dashed #c9c9c9; border-radius: 10px; padding: 10px; background: #fafafa; }
+    .setup-preview {
+      margin-top: 8px; min-height: 62px; border: 1px dashed #c9c9c9;
+      border-radius: 8px; background: #fff; display: flex;
+      align-items: center; justify-content: center; padding: 6px;
+      color: #666; font-size: 12px; text-align: center;
+    }
+    .setup-preview img { max-width: 100%; max-height: 52px; object-fit: contain; display: block; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; }
+    .stat { border-radius: 10px; padding: 12px 14px; color: #fff; background: var(--crimson-dark); }
+    .stat.blue { background: var(--mayor-approved); }
+    .stat.red { background: var(--mayor-declined); }
+    .stat.green { background: var(--budget-approved); }
+    .stat .num { font-family: "Playfair Display", serif; font-size: 28px; line-height: 1; margin-bottom: 4px; }
+    .stat .label { font-size: 11px; color: #f0d0d0; text-transform: uppercase; letter-spacing: 0.4px; }
+    .stat.blue .label, .stat.red .label, .stat.green .label { color: #e0e0e0; }
+
+    .section-title { font-family: "Playfair Display", serif; font-size: 18px; margin-bottom: 12px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 14px; }
+    #pendingGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .req {
+      border: 1px solid #d8d8d8; border-left: 4px solid var(--crimson);
+      border-radius: 10px; padding: 16px; background: #fff;
+      font-size: 13.5px; line-height: 1.6;
+    }
+    .req strong { color: var(--ink); }
+
+    .req-status {
+      display: inline-block; padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; margin-left: 6px;
+    }
+    .budget-approved-chip { background: #e8f5e9; color: #2e7d32; }
+    .mayor-approved-chip { background: #e3f2fd; color: #1565c0; }
+    .mayor-declined-chip { background: #ffebee; color: #c62828; }
+    .pending-chip { background: #fff3e0; color: #ff9800; }
+
+    .dashboard-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+    .panel-card { min-height: 480px; }
+
+    .empty {
+      border: 1px dashed #bbb; border-radius: 10px; padding: 26px;
+      text-align: center; color: #666; font-size: 14px; background: #fafafa;
+    }
+
+    .hidden { display: none !important; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; z-index: 50;
+    }
+    .modal {
+      width: min(720px, 100%); max-height: 90vh; overflow: auto;
+      background: #fff; border-radius: 12px; border: 1px solid #d8d8d8;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.28); padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .modal-head {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #ebebeb; padding-bottom: 8px;
+    }
+    .modal-head h3 { font-family: "Playfair Display", serif; font-size: 20px; }
+
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .filter-btn-active { background: var(--crimson-dark) !important; color: #fff !important; border-color: var(--crimson-dark) !important; }
+
+    .processed-placeholder {
+      border: 1px dashed #bbb; border-radius: 10px; padding: 26px;
+      text-align: center; color: #666; font-size: 14px; background: #fafafa;
+    }
+
+    /* PR Sheet Styles (inside modal and processed cards) */
+    .items-box { margin-top: 8px; border: 1px dashed #c7c7c7; border-radius: 8px; padding: 8px; background: #fafafa; }
+    .req-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+    .req-table th, .req-table td { border: 1px solid #cfcfcf; padding: 5px 6px; text-align: left; vertical-align: top; }
+    .req-table th { background: #f2f2f2; font-size: 11px; text-transform: uppercase; font-weight: 700; }
+
+    .sheet-banner {
+      margin-top: 8px; margin-bottom: 8px;
+      border: 1px solid var(--crimson-dark); border-radius: 6px;
+      background: linear-gradient(160deg, var(--crimson-dark) 0%, var(--crimson) 55%, var(--crimson-dark) 100%);
+      color: #fff; text-align: center; padding: 8px 8px 10px;
+    }
+    .sheet-banner .title { font-family: "Playfair Display", serif; font-size: 24px; text-transform: uppercase; letter-spacing: 0.6px; line-height: 1.1; }
+    .sheet-banner .sub { font-size: 14px; letter-spacing: 0.8px; margin-top: 2px; opacity: 0.95; }
+    .sheet-banner .lgu { font-size: 34px; font-weight: 700; line-height: 1; opacity: 0.15; letter-spacing: 4px; margin-top: -4px; }
+
+    .sheet-meta { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+    .sheet-meta td { border: 1px solid #cfcfcf; padding: 5px 6px; }
+    .sheet-meta .lbl { width: 130px; background: linear-gradient(90deg, var(--crimson-dark) 0%, var(--crimson) 100%); color: #fff; font-weight: 700; }
+
+    .sheet-purpose { margin-top: 6px; border: 1px solid #cfcfcf; border-radius: 4px; background: #f8f8f8; padding: 7px; min-height: 44px; white-space: pre-wrap; font-size: 12px; }
+
+    .sheet-sign-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+    .sheet-sign-table th, .sheet-sign-table td { border: 1px solid #cfcfcf; padding: 6px; vertical-align: middle; }
+    .sheet-sign-table .left-label { width: 130px; background: linear-gradient(90deg, var(--crimson-dark) 0%, var(--crimson) 100%); color: #fff; font-weight: 700; white-space: nowrap; }
+    .sheet-sign-title { background: #fce8e8; text-align: center; font-weight: 700; text-transform: uppercase; }
+    .sheet-name-cell { text-align: center; font-weight: 700; text-transform: uppercase; }
+    .sheet-designation-cell { text-align: center; font-style: italic; font-weight: 700; }
+    .sheet-signature-row { margin-top: 6px; border: 1px dashed #c8c8c8; border-radius: 4px; background: #fafafa; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 4px; }
+    .sheet-signature-row img { max-width: 100%; max-height: 38px; object-fit: contain; display: block; }
+
+    .budget-approval-area { margin-top: 8px; display: flex; justify-content: center; }
+    .budget-approval-overlay { position: relative; width: min(460px, 100%); min-height: 140px; border: none; background: transparent; overflow: hidden; }
+    .budget-approval-stamp { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 10px; z-index: 1; }
+    .budget-approval-stamp img { max-width: 92%; max-height: 118px; object-fit: contain; display: block; }
+    .budget-approval-signature { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2; padding: 10px; }
+    .budget-approval-signature img { max-width: 52%; max-height: 52px; object-fit: contain; display: block; }
+
+    .request-toast {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 120;
+      min-width: 260px;
+      max-width: 420px;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .request-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .request-toast.success {
+      background: linear-gradient(135deg, #1f8f45 0%, #2e7d32 100%);
+    }
+
+    .request-toast.error {
+      background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%);
+    }
+
+    @media (max-width: 1200px) {
+      .dashboard-columns { grid-template-columns: 1fr; }
+      .panel-card { min-height: 0; }
+      .grid { grid-template-columns: 1fr; }
+      #pendingGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .setup-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      #pendingGrid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="topbar-left">
+        <img src="images/OSLOB SEAL.png" alt="LGU Oslob Seal" class="topbar-logo" />
+        <div class="topbar-text">
+          <h1>Mayor's Office Dashboard</h1>
+          <p>Municipality of Oslob &mdash; Purchase Request Signing &amp; Approval</p>
+        </div>
+      </div>
+      <span class="badge">Mayor's Office</span>
+    </div>
+
+    <div class="content">
+      <!-- Stats -->
+      <div class="card">
+        <div class="stats" id="statsBar"></div>
+      </div>
+
+      <!-- Signature Setup -->
+      <div class="card">
+        <div class="section-title">Mayor's Signature Setup</div>
+        <div class="setup-grid">
+          <div class="setup-box">
+            <label for="mayorSigUpload" style="font-size:12px;font-weight:600;display:block;">Upload Mayor's Signature Image</label>
+            <input id="mayorSigUpload" type="file" accept="image/*"
+              style="width:100%;margin-top:6px;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;background:#fff;" />
+            <div class="actions" style="margin-top:8px;">
+              <button id="saveMayorSigBtn" class="btn btn-dark" type="button">Save Signature</button>
+            </div>
+            <div id="mayorSigPreview" class="setup-preview">No saved signature</div>
+          </div>
+          <div class="setup-box" style="display:flex;align-items:center;justify-content:center;text-align:center;min-height:120px;">
+            <div>
+              <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;text-transform:uppercase;color:var(--crimson-dark);letter-spacing:0.5px;">ATTY. RONALD L. GUAREN</div>
+              <div style="font-size:13px;color:#555;margin-top:6px;font-style:italic;">Municipal Mayor</div>
+              <div style="font-size:12px;color:#888;margin-top:2px;">Oslob, Cebu</div>
+            </div>
+          </div>
+        </div>
+        <div id="setupStatus" class="status-msg"></div>
+      </div>
+
+      <!-- Dashboard Columns -->
+      <div class="dashboard-columns">
+        <!-- Pending: awaiting Mayor's signature -->
+        <div class="card panel-card">
+          <div class="section-title">Awaiting Mayor's Signature</div>
+          <div class="grid" id="pendingGrid"></div>
+        </div>
+
+        <!-- Processed: signed or declined by Mayor -->
+        <div class="card panel-card">
+          <div class="section-title">Signed / Declined Requests</div>
+          <div class="filter-bar">
+            <button id="showSignedBtn" class="btn btn-light" type="button">View Signed</button>
+            <button id="showDeclinedBtn" class="btn btn-light" type="button">View Declined</button>
+          </div>
+          <div id="processedPlaceholder" class="processed-placeholder">
+            Select <strong>View Signed</strong> or <strong>View Declined</strong> to display signed/declined requests.
+          </div>
+          <div class="grid hidden" id="processedGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review & Sign Modal -->
+  <div id="reviewModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Review &amp; Sign Purchase Request</h3>
+        <button id="closeModalBtn" class="btn btn-light" type="button">Close</button>
+      </div>
+
+      <div id="requestInfo" style="font-size:13.5px;line-height:1.65;"></div>
+
+      <div>
+        <label for="signDate" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Date Signed</label>
+        <input id="signDate" type="date"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+
+      <div class="actions">
+        <button id="signBtn" class="btn btn-blue" type="button">&#10003;&nbsp; Sign &amp; Approve</button>
+        <button id="declineBtn" class="btn btn-red" type="button">&#10007;&nbsp; Decline Request</button>
+      </div>
+
+      <div id="signStatus" class="status-msg"></div>
+    </div>
+  </div>
+
+  <div id="mayorActionToast" class="request-toast" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
+    const STORAGE_MAYOR_KEY    = "lguOslobMayorProfile";
+    const API_BASE_URL         = window.location.origin + "/api";
+    const STAMP_IMAGE_PATH      = "images/stamp.png";
+
+    const statsBar            = document.getElementById("statsBar");
+    const pendingGrid         = document.getElementById("pendingGrid");
+    const processedGrid       = document.getElementById("processedGrid");
+    const processedPlaceholder = document.getElementById("processedPlaceholder");
+    const showSignedBtn       = document.getElementById("showSignedBtn");
+    const showDeclinedBtn     = document.getElementById("showDeclinedBtn");
+    const reviewModal         = document.getElementById("reviewModal");
+    const closeModalBtn       = document.getElementById("closeModalBtn");
+    const requestInfo         = document.getElementById("requestInfo");
+    const signDate            = document.getElementById("signDate");
+    const signBtn             = document.getElementById("signBtn");
+    const declineBtn          = document.getElementById("declineBtn");
+    const signStatus          = document.getElementById("signStatus");
+    const mayorActionToast    = document.getElementById("mayorActionToast");
+    const mayorSigUpload      = document.getElementById("mayorSigUpload");
+    const saveMayorSigBtn     = document.getElementById("saveMayorSigBtn");
+    const mayorSigPreview     = document.getElementById("mayorSigPreview");
+    const setupStatus         = document.getElementById("setupStatus");
+
+    let currentRequestId = null;
+    let processedFilter  = "none";
+    let savedMayorSig    = "";
+    let mayorToastTimer  = null;
+    let isServerSyncEnabled = false;
+
+    async function apiRequest(path, options) {
+      const response = await fetch(API_BASE_URL + path, options || {});
+      if (!response.ok) {
+        throw new Error("API error: " + response.status);
+      }
+      return response.json();
+    }
+
+    async function initializeServerSync() {
+      try {
+        await apiRequest("/health");
+        const state = await apiRequest("/state");
+        localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(Array.isArray(state.requests) ? state.requests : []));
+        localStorage.setItem(STORAGE_MAYOR_KEY, JSON.stringify(state.mayorProfile && typeof state.mayorProfile === "object" ? state.mayorProfile : {}));
+        isServerSyncEnabled = true;
+      } catch (error) {
+        isServerSyncEnabled = false;
+      }
+    }
+
+    function syncRequestsToServer(requests) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+      fetch(API_BASE_URL + "/requests", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requests: Array.isArray(requests) ? requests : [] })
+      }).catch(() => {
+        isServerSyncEnabled = false;
+      });
+    }
+
+    function syncMayorProfileToServer(profile) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+      fetch(API_BASE_URL + "/mayor-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile: profile && typeof profile === "object" ? profile : {} })
+      }).catch(() => {
+        isServerSyncEnabled = false;
+      });
+    }
+
+    /* ── Storage helpers ── */
+    function getRequests() {
+      try {
+        const raw = localStorage.getItem(STORAGE_REQUESTS_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) { return []; }
+    }
+
+    function saveRequests(requests) {
+      localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(requests));
+      syncRequestsToServer(requests);
+    }
+
+    function getMayorProfile() {
+      try {
+        const raw = localStorage.getItem(STORAGE_MAYOR_KEY);
+        if (!raw) return { signatureData: "" };
+        const parsed = JSON.parse(raw);
+        return { signatureData: parsed.signatureData || "" };
+      } catch (e) { return { signatureData: "" }; }
+    }
+
+    function saveMayorProfile(profile) {
+      localStorage.setItem(STORAGE_MAYOR_KEY, JSON.stringify(profile));
+      syncMayorProfileToServer(profile);
+    }
+
+    /* ── Text helpers ── */
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function cleanDisplayText(value) {
+      let text = String(value == null ? "" : value);
+      const markers = [
+        "function printApprovedRequest(",
+        "function renderDashboard(",
+        "function openApprovalModal("
+      ];
+      let cutAt = text.length;
+      markers.forEach((m) => {
+        const idx = text.indexOf(m);
+        if (idx >= 0 && idx < cutAt) cutAt = idx;
+      });
+      if (cutAt < text.length) text = text.slice(0, cutAt);
+      text = text.replace(/^';\s*}\s*/i, "");
+      return text.trim();
+    }
+
+    function normalizeStatus(status) {
+      const value = cleanDisplayText(status).toLowerCase();
+      if (value.includes("approved")) return "approved";
+      if (value.includes("rejected")) return "rejected";
+      return "pending";
+    }
+
+    function formatAmount(value) {
+      return "\u20b1\u00a0" + Number(value).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function showMayorActionToast(message, type) {
+      if (!mayorActionToast) {
+        return;
+      }
+      mayorActionToast.textContent = message;
+      mayorActionToast.className = "request-toast " + (type || "success") + " show";
+      if (mayorToastTimer) {
+        clearTimeout(mayorToastTimer);
+      }
+      mayorToastTimer = setTimeout(() => {
+        mayorActionToast.classList.remove("show");
+      }, 3200);
+    }
+
+    /* ── Items table renderer ── */
+    function renderItems(items) {
+      if (!items || items.length === 0) {
+        return '<div class="items-box"><strong>Items:</strong> None</div>';
+      }
+      const rows = items.map((item) => {
+        const unit    = escapeHtml(cleanDisplayText(item.unit || ""));
+        const desc    = escapeHtml(cleanDisplayText(item.description || "-"));
+        const uCost   = escapeHtml(cleanDisplayText((item.unitCostValue > 0 ? formatAmount(item.unitCostValue) : "") || item.unitCost || "-"));
+        const totCost = escapeHtml(cleanDisplayText((item.totalCostValue > 0 ? formatAmount(item.totalCostValue) : "") || item.totalCost || "-"));
+        return "<tr><td>" + (item.quantity || "") + "</td><td>" + unit + "</td><td>" + desc + "</td><td>" + uCost + "</td><td>" + totCost + "</td></tr>";
+      }).join("");
+      return '<div class="items-box"><strong>Items:</strong>'
+        + '<table class="req-table"><thead><tr><th>Qty</th><th>Unit</th><th>Description</th><th>Unit Cost</th><th>Est. Cost</th></tr></thead>'
+        + "<tbody>" + rows + "</tbody></table></div>";
+    }
+
+    /* ── Full PR sheet renderer ── */
+    function renderRequestSheet(request) {
+      const MAYOR_NAME  = "ATTY. RONALD L. GUAREN";
+      const MAYOR_POS   = "Municipal Mayor";
+      const purpose         = escapeHtml(cleanDisplayText(request.purpose || "-"));
+      const requestedBy     = escapeHtml(cleanDisplayText(request.printedName || request.requestedBy || "-"));
+      const requestedDesig  = escapeHtml(cleanDisplayText(request.designation || request.officeCode || "-"));
+      const reqSig          = request.requestedSignature || "";
+      const budgetSig       = request.budgetSignatureData || "";
+      const budgetStamp     = request.budgetStampData || STAMP_IMAGE_PATH;
+      const isMayorApproved = request.mayorStatus === "mayor_approved";
+      const mayorSig        = isMayorApproved ? (request.mayorSignatureData || "") : "";
+      const sectionText = escapeHtml(cleanDisplayText(request.section || request.officeCode || "-"));
+      const grandTotal  = escapeHtml(cleanDisplayText(request.grandTotalFormatted || "-"));
+
+      const reqSigView   = reqSig    ? '<img src="' + reqSig   + '" alt="Requester signature" />' : "";
+      const mayorSigView = mayorSig  ? '<img src="' + mayorSig + '" alt="Mayor signature" />'     : "";
+      const budgSigView  = budgetSig ? '<img src="' + budgetSig + '" alt="Budget signature" />'   : "";
+      const budgStampView = '<img src="' + budgetStamp + '" alt="Budget stamp" />';
+
+      return ''
+        + '<div class="sheet-banner"><div class="title">Purchase Request</div><div class="sub">OSLOB, CEBU</div><div class="lgu">LGU</div></div>'
+        + '<table class="sheet-meta">'
+        + '<tr><td class="lbl">Department:</td><td colspan="4">MAYOR\'S OFFICE</td></tr>'
+        + '<tr><td class="lbl">Section:</td><td colspan="4">' + sectionText + '</td></tr>'
+        + '</table>'
+        + renderItems(request.items)
+        + '<div class="sheet-purpose"><strong>Purpose:</strong> ' + purpose + '</div>'
+        + '<table class="sheet-sign-table">'
+        + '<tr><th class="left-label"></th><th class="sheet-sign-title">Requested By:</th><th class="sheet-sign-title">Approved By:</th></tr>'
+        + '<tr><td class="left-label">Signature:</td>'
+        + '<td><div class="sheet-signature-row">' + reqSigView + '</div></td>'
+        + '<td><div class="sheet-signature-row">' + mayorSigView + '</div></td>'
+        + '</tr>'
+        + '<tr><td class="left-label">Printed Name:</td><td class="sheet-name-cell">' + requestedBy + '</td><td class="sheet-name-cell">' + MAYOR_NAME + '</td></tr>'
+        + '<tr><td class="left-label">Designation:</td><td class="sheet-designation-cell">' + requestedDesig + '</td><td class="sheet-designation-cell">' + MAYOR_POS + '</td></tr>'
+        + '</table>'
+        + '<div style="margin-top:8px;text-align:right;font-weight:700;font-size:13px;">Grand Total: ' + grandTotal + '</div>'
+        + '<div class="budget-approval-area">'
+        + '<div class="budget-approval-overlay">'
+        + '<div class="budget-approval-stamp">' + budgStampView + '</div>'
+        + '<div class="budget-approval-signature">' + budgSigView + '</div>'
+        + '</div></div>';
+    }
+
+    /* ── Stats ── */
+    function renderStats(requests) {
+      const budgetApproved = requests.filter(r => normalizeStatus(r.status) === "approved");
+      const awaitingMayor  = budgetApproved.filter(r => !r.mayorStatus).length;
+      const totalApproved  = budgetApproved.length;
+      const signed         = requests.filter(r => r.mayorStatus === "mayor_approved").length;
+      const declined       = requests.filter(r => r.mayorStatus === "mayor_declined").length;
+
+      statsBar.innerHTML = ""
+        + '<div class="stat green"><div class="num">' + totalApproved + '</div><div class="label">Total Requests</div></div>'
+        + '<div class="stat"><div class="num">' + awaitingMayor + '</div><div class="label">Awaiting Signature</div></div>'
+        + '<div class="stat blue"><div class="num">' + signed + '</div><div class="label">Mayor Signed</div></div>'
+        + '<div class="stat red"><div class="num">' + declined + '</div><div class="label">Mayor Declined</div></div>';
+    }
+
+    function syncFilterBtns() {
+      showSignedBtn.classList.toggle("filter-btn-active",  processedFilter === "mayor_approved");
+      showDeclinedBtn.classList.toggle("filter-btn-active", processedFilter === "mayor_declined");
+    }
+
+    /* ── Pending section (budget-approved, no mayor action yet) ── */
+    function renderPending(requests) {
+      const rows = requests.filter(r => normalizeStatus(r.status) === "approved" && !r.mayorStatus);
+      if (rows.length === 0) {
+        pendingGrid.innerHTML = '<div class="empty">No requests awaiting Mayor\'s signature.</div>';
+        return;
+      }
+      pendingGrid.innerHTML = rows
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .map((r) => {
+          const token = encodeURIComponent(String(r.id || ""));
+          return '<div class="req">'
+            + '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(r.id)) + '<br />'
+            + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(r.officeName)) + ' (' + escapeHtml(cleanDisplayText(r.officeCode)) + ')<br />'
+            + '<strong>Submitted:</strong> ' + escapeHtml(cleanDisplayText(r.timestamp || "-")) + '<br />'
+            + '<strong>Budget Decision:</strong> ' + escapeHtml(cleanDisplayText(r.budgetDecisionDate || r.approvalDate || "-")) + '<br />'
+            + '<strong>Grand Total:</strong> ' + escapeHtml(cleanDisplayText(r.grandTotalFormatted || "-"))
+            + '<div class="actions" style="margin-top:10px;">'
+            + '<button class="btn btn-dark js-review" type="button" data-token="' + token + '">Review &amp; Sign</button>'
+            + '</div></div>';
+        }).join("");
+
+      pendingGrid.querySelectorAll(".js-review").forEach((btn) => {
+        btn.addEventListener("click", () => openReviewModal(decodeURIComponent(btn.getAttribute("data-token"))));
+      });
+    }
+
+    /* ── Processed section (mayor-signed or mayor-declined) ── */
+    function renderProcessed(requests) {
+      if (processedFilter === "none") {
+        processedGrid.classList.add("hidden");
+        processedPlaceholder.classList.remove("hidden");
+        syncFilterBtns();
+        return;
+      }
+
+      let rows = requests.filter(r => r.mayorStatus === "mayor_approved" || r.mayorStatus === "mayor_declined");
+      if (processedFilter === "mayor_approved") rows = rows.filter(r => r.mayorStatus === "mayor_approved");
+      else if (processedFilter === "mayor_declined") rows = rows.filter(r => r.mayorStatus === "mayor_declined");
+
+      syncFilterBtns();
+      processedGrid.classList.remove("hidden");
+      processedPlaceholder.classList.add("hidden");
+
+      if (rows.length === 0) {
+        processedGrid.innerHTML = '<div class="empty">No requests in this category.</div>';
+        return;
+      }
+
+      processedGrid.innerHTML = rows
+        .sort((a, b) => new Date(b.mayorApprovalDate || b.mayorDeclinedDate || b.timestamp) - new Date(a.mayorApprovalDate || a.mayorDeclinedDate || a.timestamp))
+        .map((r) => {
+          const isSigned = r.mayorStatus === "mayor_approved";
+          const chipClass = isSigned ? "mayor-approved-chip" : "mayor-declined-chip";
+          const chipText  = isSigned ? "Mayor Signed" : "Mayor Declined";
+          const date = escapeHtml(cleanDisplayText(r.mayorApprovalDate || r.mayorDeclinedDate || "-"));
+          return '<div class="req">'
+            + '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(r.id)) + '<br />'
+            + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(r.officeName)) + ' (' + escapeHtml(cleanDisplayText(r.officeCode)) + ')<br />'
+            + '<strong>Status:</strong> <span class="req-status ' + chipClass + '">' + chipText + '</span><br />'
+            + '<strong>Date:</strong> ' + date + '<br />'
+            + '<strong>Grand Total:</strong> ' + escapeHtml(cleanDisplayText(r.grandTotalFormatted || "-")) + '<br />'
+            + renderRequestSheet(r)
+            + '</div>';
+        }).join("");
+    }
+
+    /* ── Dashboard render ── */
+    function renderDashboard() {
+      const requests = getRequests();
+      renderStats(requests);
+      renderPending(requests);
+      renderProcessed(requests);
+    }
+
+    /* ── Review Modal ── */
+    function openReviewModal(requestId) {
+      currentRequestId = requestId;
+      signStatus.textContent = "";
+      signDate.valueAsDate = new Date();
+      const request = getRequests().find(r => r.id === requestId);
+      if (!request) return;
+
+      requestInfo.innerHTML = ''
+        + '<strong>Request ID:</strong> ' + escapeHtml(cleanDisplayText(request.id)) + '<br />'
+        + '<strong>Office:</strong> ' + escapeHtml(cleanDisplayText(request.officeName)) + ' (' + escapeHtml(cleanDisplayText(request.officeCode)) + ')<br />'
+        + '<strong>Submitted:</strong> ' + escapeHtml(cleanDisplayText(request.timestamp || "-")) + '<br />'
+        + '<strong>Grand Total:</strong> ' + escapeHtml(cleanDisplayText(request.grandTotalFormatted || "-")) + '<br />'
+        + renderRequestSheet(request);
+
+      reviewModal.classList.remove("hidden");
+    }
+
+    function closeReviewModal() {
+      reviewModal.classList.add("hidden");
+      currentRequestId = null;
+    }
+
+    /* ── Approve / Decline ── */
+    function processRequest(action) {
+      if (!currentRequestId) return;
+      if (!signDate.value) { signStatus.textContent = "Please select a date."; return; }
+      if (action === "sign" && !savedMayorSig) {
+        signStatus.textContent = "Please save the Mayor's signature first in the Signature Setup section above.";
+        return;
+      }
+      const requests = getRequests();
+      const idx = requests.findIndex(r => r.id === currentRequestId);
+      if (idx < 0) { signStatus.textContent = "Request not found."; return; }
+
+      if (action === "sign") {
+        requests[idx].mayorStatus        = "mayor_approved";
+        requests[idx].officeStatus       = "approved";
+        requests[idx].mayorApprovalDate  = signDate.value;
+        requests[idx].mayorSignatureData = savedMayorSig;
+      } else {
+        requests[idx].mayorStatus        = "mayor_declined";
+        requests[idx].officeStatus       = "declined_mayor";
+        requests[idx].mayorDeclinedDate  = signDate.value;
+        requests[idx].mayorSignatureData = "";
+      }
+
+      saveRequests(requests);
+      signStatus.textContent = action === "sign"
+        ? "Request signed and approved by Mayor."
+        : "Request declined by Mayor.";
+      showMayorActionToast(
+        action === "sign" ? "Request Approved Successfully." : "Request Declined Successfully.",
+        action === "sign" ? "success" : "error"
+      );
+      setTimeout(() => { closeReviewModal(); renderDashboard(); }, 700);
+    }
+
+    /* ── Signature image processing (transparent bg removal) ── */
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload  = () => resolve(img);
+          img.onerror = () => reject(new Error("Cannot load image."));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error("Cannot read file."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function trimTransparentBounds(ctx, w, h) {
+      const pixels = ctx.getImageData(0, 0, w, h).data;
+      let minX = w, minY = h, maxX = -1, maxY = -1;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          if (pixels[(y * w + x) * 4 + 3] > 0) {
+            if (x < minX) minX = x; if (y < minY) minY = y;
+            if (x > maxX) maxX = x; if (y > maxY) maxY = y;
+          }
+        }
+      }
+      if (maxX < minX || maxY < minY) return null;
+      return { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
+    }
+
+    async function createTransparentSig(file) {
+      const src = await loadImageFromFile(file);
+      const maxW = 900;
+      const scale = src.width > maxW ? maxW / src.width : 1;
+      const w = Math.max(1, Math.round(src.width * scale));
+      const h = Math.max(1, Math.round(src.height * scale));
+      const wc = document.createElement("canvas");
+      wc.width = w; wc.height = h;
+      const wCtx = wc.getContext("2d");
+      wCtx.drawImage(src, 0, 0, w, h);
+      const imgData = wCtx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i+1], b = d[i+2];
+        const mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+        const lum = 0.299*r + 0.587*g + 0.114*b;
+        const sat = mx === 0 ? 0 : (mx - mn) / mx;
+        if (lum > 245 && sat < 0.18) { d[i+3] = 0; continue; }
+        let alpha = (235 - lum) * 3.2 + sat * 35;
+        if (alpha < 18) alpha = 0; else if (alpha > 255) alpha = 255;
+        d[i] = 20; d[i+1] = 20; d[i+2] = 20; d[i+3] = alpha;
+      }
+      wCtx.putImageData(imgData, 0, 0);
+      const bounds = trimTransparentBounds(wCtx, w, h);
+      if (!bounds) throw new Error("No signature content detected.");
+      const pad = 4;
+      const oc = document.createElement("canvas");
+      oc.width = bounds.width + pad*2; oc.height = bounds.height + pad*2;
+      oc.getContext("2d").drawImage(wc, bounds.x, bounds.y, bounds.width, bounds.height, pad, pad, bounds.width, bounds.height);
+      return oc.toDataURL("image/png");
+    }
+
+    /* ── Save Mayor Signature ── */
+    async function saveMayorSignatureAction() {
+      const file = mayorSigUpload.files[0];
+      if (!file) { setupStatus.textContent = "Select a signature image first."; return; }
+      if (!file.type.startsWith("image/")) { setupStatus.textContent = "Please upload a valid image file."; return; }
+      setupStatus.textContent = "Processing signature...";
+      try {
+        const sig = await createTransparentSig(file);
+        const profile = getMayorProfile();
+        profile.signatureData = sig;
+        saveMayorProfile(profile);
+        mayorSigUpload.value = "";
+        savedMayorSig = sig;
+        mayorSigPreview.innerHTML = '<img src="' + sig + '" alt="Mayor signature" />';
+        setupStatus.textContent = "Mayor signature saved with transparent background.";
+      } catch (e) {
+        setupStatus.textContent = "Could not process image. Please use a clearer signature image.";
+      }
+    }
+
+    /* ── Update profile views ── */
+    function loadProfileViews() {
+      const profile = getMayorProfile();
+      savedMayorSig = profile.signatureData || "";
+      if (savedMayorSig) {
+        mayorSigPreview.innerHTML = '<img src="' + savedMayorSig + '" alt="Mayor signature" />';
+      } else {
+        mayorSigPreview.textContent = "No saved signature";
+      }
+    }
+
+    /* ── Event Listeners ── */
+    closeModalBtn.addEventListener("click", closeReviewModal);
+    reviewModal.addEventListener("click", (e) => { if (e.target === reviewModal) closeReviewModal(); });
+    saveMayorSigBtn.addEventListener("click", saveMayorSignatureAction);
+    signBtn.addEventListener("click",    () => processRequest("sign"));
+    declineBtn.addEventListener("click", () => processRequest("decline"));
+    showSignedBtn.addEventListener("click", () => {
+      processedFilter = processedFilter === "mayor_approved" ? "none" : "mayor_approved";
+      renderDashboard();
+    });
+    showDeclinedBtn.addEventListener("click", () => {
+      processedFilter = processedFilter === "mayor_declined" ? "none" : "mayor_declined";
+      renderDashboard();
+    });
+
+    /* ── Boot ── */
+    async function boot() {
+      await initializeServerSync();
+      loadProfileViews();
+      renderDashboard();
+    }
+
+    boot();
+  </script>
+</body>
+</html>
