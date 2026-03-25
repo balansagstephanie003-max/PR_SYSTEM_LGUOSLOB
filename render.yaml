@@ -3,7 +3,7 @@ services:
     name: lgu-oslob-pr-system
     runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm ci --omit=dev
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
