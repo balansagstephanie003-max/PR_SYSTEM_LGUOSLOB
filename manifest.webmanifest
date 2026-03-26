@@ -1,0 +1,24 @@
+{
+  "name": "LGU Oslob Purchase Request",
+  "short_name": "Oslob PR",
+  "description": "LGU Oslob Purchase Request System",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1f1f1f",
+  "theme_color": "#1f1f1f",
+  "icons": [
+    {
+      "src": "images/OSLOB%20SEAL.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/OSLOB%20SEAL.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

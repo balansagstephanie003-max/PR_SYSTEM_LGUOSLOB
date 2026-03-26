@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LGU Oslob Purchase Request</title>
+  <meta name="theme-color" content="#1f1f1f" />
+  <link rel="icon" type="image/png" href="images/OSLOB%20SEAL.png" />
+  <link rel="apple-touch-icon" href="images/OSLOB%20SEAL.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
@@ -1880,6 +1884,9 @@
     let requestToastTimer = null;
 
     let isServerSyncEnabled = false;
+    let lastServerUpdatedAt = "";
+    let syncPollTimer = null;
+    const SERVER_SYNC_INTERVAL_MS = 3000;
 
     function getOfficeSignatureKey(officeCode) {
       return "lguOslobOfficeSignature_" + officeCode;
@@ -1897,12 +1904,105 @@
       try {
         await apiRequest("/health");
         const state = await apiRequest("/state");
-        localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(state.users || {}));
-        localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(state.requests || []));
-        localStorage.setItem(STORAGE_OFFICE_ACCESS_KEY, JSON.stringify(state.officeAccess || {}));
+        applyServerState(state);
         isServerSyncEnabled = true;
       } catch (error) {
         isServerSyncEnabled = false;
+      }
+    }
+
+    function applyServerState(state) {
+      if (!state || typeof state !== "object") {
+        return false;
+      }
+
+      const usersRaw = JSON.stringify(state.users || {});
+      const requestsRaw = JSON.stringify(state.requests || []);
+      const officeAccessRaw = JSON.stringify(state.officeAccess || {});
+
+      let changed = false;
+      if (localStorage.getItem(STORAGE_USERS_KEY) !== usersRaw) {
+        localStorage.setItem(STORAGE_USERS_KEY, usersRaw);
+        changed = true;
+      }
+      if (localStorage.getItem(STORAGE_REQUESTS_KEY) !== requestsRaw) {
+        localStorage.setItem(STORAGE_REQUESTS_KEY, requestsRaw);
+        changed = true;
+      }
+      if (localStorage.getItem(STORAGE_OFFICE_ACCESS_KEY) !== officeAccessRaw) {
+        localStorage.setItem(STORAGE_OFFICE_ACCESS_KEY, officeAccessRaw);
+        changed = true;
+      }
+
+      lastServerUpdatedAt = String(state.updatedAt || "");
+      return changed;
+    }
+
+    function refreshViewAfterServerSync() {
+      refreshOfficeAuthSelects();
+
+      const session = getSession();
+      if (!session) {
+        return;
+      }
+
+      if (session.role === "admin") {
+        renderAdminDashboard();
+        return;
+      }
+
+      if (session.role === "budget") {
+        renderBudgetDashboard();
+        return;
+      }
+
+      if (session.role === "office") {
+        const users = getUsers();
+        const account = users[session.officeCode];
+        refreshOfficeDashPreview(account && account.signatureData ? account.signatureData : "");
+        if (officeRequestsModal && !officeRequestsModal.classList.contains("hidden")) {
+          openOfficeRequestsModal();
+        }
+      }
+    }
+
+    async function pollServerState(forceRefreshView) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+
+      try {
+        const state = await apiRequest("/state");
+        const incomingUpdatedAt = String(state.updatedAt || "");
+        if (!forceRefreshView && incomingUpdatedAt && incomingUpdatedAt === lastServerUpdatedAt) {
+          return;
+        }
+
+        const changed = applyServerState(state);
+        if (changed || forceRefreshView) {
+          refreshViewAfterServerSync();
+        }
+      } catch (error) {
+        isServerSyncEnabled = false;
+        stopAutoServerSync();
+      }
+    }
+
+    function startAutoServerSync() {
+      stopAutoServerSync();
+      if (!isServerSyncEnabled) {
+        return;
+      }
+
+      syncPollTimer = window.setInterval(() => {
+        pollServerState(false);
+      }, SERVER_SYNC_INTERVAL_MS);
+    }
+
+    function stopAutoServerSync() {
+      if (syncPollTimer) {
+        window.clearInterval(syncPollTimer);
+        syncPollTimer = null;
       }
     }
 
@@ -3470,12 +3570,28 @@
     });
 
     window.addEventListener("resize", resizeSignatureCanvas);
+    window.addEventListener("storage", (event) => {
+      if (
+        event.key === STORAGE_USERS_KEY
+        || event.key === STORAGE_REQUESTS_KEY
+        || event.key === STORAGE_OFFICE_ACCESS_KEY
+      ) {
+        refreshViewAfterServerSync();
+      }
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        pollServerState(true);
+      }
+    });
 
     async function bootApp() {
       await initializeServerSync();
       resizeSignatureCanvas();
       recalculateTotals();
       renderSession();
+      startAutoServerSync();
+      pollServerState(true);
     }
 
     bootApp();
