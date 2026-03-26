@@ -1,6 +1,7 @@
 {
   "name": "LGU Oslob Purchase Request",
   "short_name": "Oslob PR",
+  "id": "/",
   "description": "LGU Oslob Purchase Request System",
   "start_url": "/",
   "scope": "/",
@@ -9,13 +10,13 @@
   "theme_color": "#1f1f1f",
   "icons": [
     {
-      "src": "images/OSLOB%20SEAL.png",
+      "src": "images/oslob-seal-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "images/OSLOB%20SEAL.png",
+      "src": "images/oslob-seal-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
