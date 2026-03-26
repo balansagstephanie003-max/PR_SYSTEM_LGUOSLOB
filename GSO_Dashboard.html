@@ -223,10 +223,38 @@
     @media (max-width: 1200px) { .stats { grid-template-columns: repeat(3, 1fr); } }
     @media (max-width: 900px)  { .stats { grid-template-columns: repeat(2, 1fr); } .grid { grid-template-columns: 1fr; } }
     @media (max-width: 600px)  { .stats { grid-template-columns: 1fr; } .topbar { flex-direction: column; align-items: flex-start; } }
+
+    @media (max-width: 1200px) {
+      html, body {
+        overflow-x: auto;
+      }
+
+      .app {
+        min-width: 1280px;
+      }
+
+      .content {
+        width: 1280px;
+        min-width: 1280px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(6, minmax(100px, 1fr));
+      }
+
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      }
+
+      .topbar {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div id="appRoot" class="app hidden">
     <div class="topbar">
       <div class="topbar-left">
         <img src="images/OSLOB SEAL.png" alt="LGU Oslob Seal" class="topbar-logo" />
@@ -235,7 +263,10 @@
           <p>General Services Office &mdash; Procurement Tracking</p>
         </div>
       </div>
-      <span class="badge">General Services Office</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="openChangePasswordBtn" class="btn btn-light" type="button">Change Password</button>
+        <span class="badge">General Services Office</span>
+      </div>
     </div>
 
     <div class="content">
@@ -306,10 +337,59 @@
     </div>
   </div>
 
+  <div id="gsoAuthModal" class="modal-backdrop">
+    <div class="modal" style="max-width:460px;">
+      <div class="modal-head">
+        <h3>GSO Dashboard Login</h3>
+      </div>
+      <div class="modal-body">
+        <div class="field-row">
+          <label for="gsoAuthPassword">Password</label>
+          <input id="gsoAuthPassword" type="password" placeholder="Enter GSO password" />
+        </div>
+        <div class="modal-actions" style="justify-content:flex-start;">
+          <button id="gsoAuthLoginBtn" class="btn btn-gso" type="button">Login</button>
+        </div>
+        <div id="gsoAuthStatus" class="status-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gsoChangePasswordModal" class="modal-backdrop hidden">
+    <div class="modal" style="max-width:560px;">
+      <div class="modal-head">
+        <h3>Change GSO Password</h3>
+        <button id="closeGsoChangePasswordBtn" class="btn btn-light" type="button">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-row">
+          <label for="gsoCurrentPassword">Current Password</label>
+          <input id="gsoCurrentPassword" type="password" placeholder="Enter current password" />
+        </div>
+        <div class="field-row">
+          <label for="gsoNewPassword">New Password</label>
+          <input id="gsoNewPassword" type="password" placeholder="Enter new password" />
+        </div>
+        <div class="field-row">
+          <label for="gsoConfirmPassword">Confirm New Password</label>
+          <input id="gsoConfirmPassword" type="password" placeholder="Confirm new password" />
+        </div>
+        <div class="modal-actions" style="justify-content:flex-start;">
+          <button id="saveGsoPasswordBtn" class="btn btn-gso" type="button">Save Password</button>
+        </div>
+        <div id="gsoChangePasswordStatus" class="status-msg"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
+    const STORAGE_GSO_PASSWORD_KEY = "lguOslobGsoDashboardPassword";
+    const DEFAULT_GSO_PASSWORD = "gso123";
     const API_BASE_URL         = window.location.origin + "/api";
     const STAMP_IMAGE_PATH     = "images/stamp.png";
+    const appRoot          = document.getElementById("appRoot");
+    const openChangePasswordBtn = document.getElementById("openChangePasswordBtn");
 
     const statsBar          = document.getElementById("statsBar");
     const requestsGrid      = document.getElementById("requestsGrid");
@@ -324,10 +404,92 @@
     const modalRequestInfo  = document.getElementById("modalRequestInfo");
     const modalPRDetails    = document.getElementById("modalPRDetails");
     const modalStatus       = document.getElementById("modalStatus");
+    const gsoAuthModal      = document.getElementById("gsoAuthModal");
+    const gsoAuthPassword   = document.getElementById("gsoAuthPassword");
+    const gsoAuthLoginBtn   = document.getElementById("gsoAuthLoginBtn");
+    const gsoAuthStatus     = document.getElementById("gsoAuthStatus");
+    const gsoChangePasswordModal = document.getElementById("gsoChangePasswordModal");
+    const closeGsoChangePasswordBtn = document.getElementById("closeGsoChangePasswordBtn");
+    const gsoCurrentPassword = document.getElementById("gsoCurrentPassword");
+    const gsoNewPassword = document.getElementById("gsoNewPassword");
+    const gsoConfirmPassword = document.getElementById("gsoConfirmPassword");
+    const saveGsoPasswordBtn = document.getElementById("saveGsoPasswordBtn");
+    const gsoChangePasswordStatus = document.getElementById("gsoChangePasswordStatus");
 
     let currentFilter    = "all";
     let currentRequestId = null;
     let isServerSyncEnabled = false;
+    let hasDashboardStarted = false;
+
+    function getGsoDashboardPassword() {
+      const saved = localStorage.getItem(STORAGE_GSO_PASSWORD_KEY);
+      if (saved) {
+        return saved;
+      }
+      localStorage.setItem(STORAGE_GSO_PASSWORD_KEY, DEFAULT_GSO_PASSWORD);
+      return DEFAULT_GSO_PASSWORD;
+    }
+
+    function startDashboardOnce() {
+      if (hasDashboardStarted) {
+        return;
+      }
+      hasDashboardStarted = true;
+      boot();
+    }
+
+    function unlockGsoDashboard() {
+      appRoot.classList.remove("hidden");
+      gsoAuthModal.classList.add("hidden");
+      startDashboardOnce();
+    }
+
+    function handleGsoLogin() {
+      gsoAuthStatus.textContent = "";
+      if (gsoAuthPassword.value !== getGsoDashboardPassword()) {
+        gsoAuthStatus.textContent = "Invalid password.";
+        return;
+      }
+      gsoAuthPassword.value = "";
+      unlockGsoDashboard();
+    }
+
+    function openGsoChangePasswordModal() {
+      gsoChangePasswordStatus.textContent = "";
+      gsoCurrentPassword.value = "";
+      gsoNewPassword.value = "";
+      gsoConfirmPassword.value = "";
+      gsoChangePasswordModal.classList.remove("hidden");
+      setTimeout(() => gsoCurrentPassword.focus(), 20);
+    }
+
+    function closeGsoChangePasswordModal() {
+      gsoChangePasswordModal.classList.add("hidden");
+    }
+
+    function saveGsoDashboardPassword() {
+      const current = gsoCurrentPassword.value;
+      const next = gsoNewPassword.value.trim();
+      const confirm = gsoConfirmPassword.value.trim();
+      const existing = getGsoDashboardPassword();
+
+      if (current !== existing) {
+        gsoChangePasswordStatus.textContent = "Current password is incorrect.";
+        return;
+      }
+      if (!next) {
+        gsoChangePasswordStatus.textContent = "New password is required.";
+        return;
+      }
+      if (next !== confirm) {
+        gsoChangePasswordStatus.textContent = "New password and confirm password do not match.";
+        return;
+      }
+
+      localStorage.setItem(STORAGE_GSO_PASSWORD_KEY, next);
+      gsoChangePasswordStatus.textContent = "Password updated successfully.";
+      setTimeout(closeGsoChangePasswordModal, 600);
+    }
 
     async function apiRequest(path, options) {
       const response = await fetch(API_BASE_URL + path, options || {});
@@ -702,6 +864,21 @@
 
     /* ── Modal button wiring ── */
     closeActionBtn.addEventListener("click", closeActionModal);
+    gsoAuthLoginBtn.addEventListener("click", handleGsoLogin);
+    gsoAuthPassword.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleGsoLogin();
+      }
+    });
+    openChangePasswordBtn.addEventListener("click", openGsoChangePasswordModal);
+    closeGsoChangePasswordBtn.addEventListener("click", closeGsoChangePasswordModal);
+    saveGsoPasswordBtn.addEventListener("click", saveGsoDashboardPassword);
+    gsoChangePasswordModal.addEventListener("click", (event) => {
+      if (event.target === gsoChangePasswordModal) {
+        closeGsoChangePasswordModal();
+      }
+    });
     cancelActionBtn.addEventListener("click", closeActionModal);
     printGSORequestBtn.addEventListener("click", () => {
       if (currentRequestId) {
@@ -718,7 +895,8 @@
       renderRequests();
     }
 
-    boot();
+    getGsoDashboardPassword();
+    setTimeout(() => gsoAuthPassword.focus(), 20);
   </script>
 </body>
 </html>

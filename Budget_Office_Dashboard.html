@@ -653,16 +653,55 @@
       .stats { grid-template-columns: 1fr; }
       .topbar { flex-direction: column; align-items: flex-start; }
     }
+
+    @media (max-width: 1200px) {
+      html, body {
+        overflow-x: auto;
+      }
+
+      .app {
+        min-width: 1280px;
+      }
+
+      .content {
+        width: 1280px;
+        min-width: 1280px;
+      }
+
+      .dashboard-columns {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      #pendingGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .setup-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stats {
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
+      }
+
+      .topbar {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div id="appRoot" class="app hidden">
     <div class="topbar">
       <div>
         <h1>Budget Office Dashboard</h1>
         <p>Municipality of Oslob - Purchase Request Approval</p>
       </div>
-      <span class="badge" id="officerBadge">Budget Officer</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="openChangePasswordBtn" class="btn btn-light" type="button">Change Password</button>
+        <span class="badge" id="officerBadge">Budget Officer</span>
+      </div>
     </div>
 
     <div class="content">
@@ -741,12 +780,72 @@
 
   <div id="budgetActionToast" class="request-toast" aria-live="polite"></div>
 
+  <div id="budgetAuthModal" class="modal-backdrop">
+    <div class="modal" style="max-width:460px;">
+      <div class="modal-head">
+        <h3>Budget Office Login</h3>
+      </div>
+      <div>
+        <label for="budgetAuthPassword" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Password</label>
+        <input id="budgetAuthPassword" type="password" placeholder="Enter Budget password"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+      <div class="actions">
+        <button id="budgetAuthLoginBtn" class="btn btn-dark" type="button">Login</button>
+      </div>
+      <div id="budgetAuthStatus" class="status"></div>
+    </div>
+  </div>
+
+  <div id="budgetChangePasswordModal" class="modal-backdrop hidden">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-head">
+        <h3>Change Budget Password</h3>
+        <button id="closeBudgetChangePasswordBtn" class="btn btn-light" type="button">Close</button>
+      </div>
+      <div>
+        <label for="budgetCurrentPassword" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Current Password</label>
+        <input id="budgetCurrentPassword" type="password" placeholder="Enter current password"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+      <div>
+        <label for="budgetNewPassword" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">New Password</label>
+        <input id="budgetNewPassword" type="password" placeholder="Enter new password"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+      <div>
+        <label for="budgetConfirmPassword" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Confirm New Password</label>
+        <input id="budgetConfirmPassword" type="password" placeholder="Confirm new password"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+      <div class="actions">
+        <button id="saveBudgetPasswordBtn" class="btn btn-dark" type="button">Save Password</button>
+      </div>
+      <div id="budgetChangePasswordStatus" class="status"></div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
     const STORAGE_BUDGET_PROFILE_KEY = "lguOslobBudgetOfficeProfile";
+    const STORAGE_BUDGET_PASSWORD_KEY = "lguOslobBudgetDashboardPassword";
+    const DEFAULT_BUDGET_PASSWORD = "budget123";
     const API_BASE_URL = window.location.origin + "/api";
+    const appRoot = document.getElementById("appRoot");
     const dashboard = document.getElementById("dashboard");
     const officerBadge = document.getElementById("officerBadge");
+    const openChangePasswordBtn = document.getElementById("openChangePasswordBtn");
+    const budgetAuthModal = document.getElementById("budgetAuthModal");
+    const budgetAuthPassword = document.getElementById("budgetAuthPassword");
+    const budgetAuthLoginBtn = document.getElementById("budgetAuthLoginBtn");
+    const budgetAuthStatus = document.getElementById("budgetAuthStatus");
+    const budgetChangePasswordModal = document.getElementById("budgetChangePasswordModal");
+    const closeBudgetChangePasswordBtn = document.getElementById("closeBudgetChangePasswordBtn");
+    const budgetCurrentPassword = document.getElementById("budgetCurrentPassword");
+    const budgetNewPassword = document.getElementById("budgetNewPassword");
+    const budgetConfirmPassword = document.getElementById("budgetConfirmPassword");
+    const saveBudgetPasswordBtn = document.getElementById("saveBudgetPasswordBtn");
+    const budgetChangePasswordStatus = document.getElementById("budgetChangePasswordStatus");
 
     const statsBar = document.getElementById("statsBar");
     const pendingGrid = document.getElementById("pendingGrid");
@@ -778,6 +877,78 @@
     let processedFilter = "none";
     let budgetToastTimer = null;
     let isServerSyncEnabled = false;
+    let hasDashboardStarted = false;
+
+    function getBudgetDashboardPassword() {
+      const saved = localStorage.getItem(STORAGE_BUDGET_PASSWORD_KEY);
+      if (saved) {
+        return saved;
+      }
+      localStorage.setItem(STORAGE_BUDGET_PASSWORD_KEY, DEFAULT_BUDGET_PASSWORD);
+      return DEFAULT_BUDGET_PASSWORD;
+    }
+
+    function startDashboardOnce() {
+      if (hasDashboardStarted) {
+        return;
+      }
+      hasDashboardStarted = true;
+      boot();
+    }
+
+    function unlockBudgetDashboard() {
+      appRoot.classList.remove("hidden");
+      budgetAuthModal.classList.add("hidden");
+      startDashboardOnce();
+    }
+
+    function handleBudgetLogin() {
+      budgetAuthStatus.textContent = "";
+      const entered = budgetAuthPassword.value;
+      if (entered !== getBudgetDashboardPassword()) {
+        budgetAuthStatus.textContent = "Invalid password.";
+        return;
+      }
+      budgetAuthPassword.value = "";
+      unlockBudgetDashboard();
+    }
+
+    function openBudgetChangePasswordModal() {
+      budgetChangePasswordStatus.textContent = "";
+      budgetCurrentPassword.value = "";
+      budgetNewPassword.value = "";
+      budgetConfirmPassword.value = "";
+      budgetChangePasswordModal.classList.remove("hidden");
+      setTimeout(() => budgetCurrentPassword.focus(), 20);
+    }
+
+    function closeBudgetChangePasswordModal() {
+      budgetChangePasswordModal.classList.add("hidden");
+    }
+
+    function saveBudgetDashboardPassword() {
+      const current = budgetCurrentPassword.value;
+      const next = budgetNewPassword.value.trim();
+      const confirm = budgetConfirmPassword.value.trim();
+      const existing = getBudgetDashboardPassword();
+
+      if (current !== existing) {
+        budgetChangePasswordStatus.textContent = "Current password is incorrect.";
+        return;
+      }
+      if (!next) {
+        budgetChangePasswordStatus.textContent = "New password is required.";
+        return;
+      }
+      if (next !== confirm) {
+        budgetChangePasswordStatus.textContent = "New password and confirm password do not match.";
+        return;
+      }
+
+      localStorage.setItem(STORAGE_BUDGET_PASSWORD_KEY, next);
+      budgetChangePasswordStatus.textContent = "Password updated successfully.";
+      setTimeout(closeBudgetChangePasswordModal, 600);
+    }
 
     async function apiRequest(path, options) {
       const response = await fetch(API_BASE_URL + path, options || {});
@@ -1403,6 +1574,21 @@
     }
 
     closeModalBtn.addEventListener("click", closeApprovalModal);
+    budgetAuthLoginBtn.addEventListener("click", handleBudgetLogin);
+    budgetAuthPassword.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleBudgetLogin();
+      }
+    });
+    openChangePasswordBtn.addEventListener("click", openBudgetChangePasswordModal);
+    closeBudgetChangePasswordBtn.addEventListener("click", closeBudgetChangePasswordModal);
+    saveBudgetPasswordBtn.addEventListener("click", saveBudgetDashboardPassword);
+    budgetChangePasswordModal.addEventListener("click", (evt) => {
+      if (evt.target === budgetChangePasswordModal) {
+        closeBudgetChangePasswordModal();
+      }
+    });
     saveProfileSignatureBtn.addEventListener("click", saveProfileSignature);
     approveBtn.addEventListener("click", () => processRequest("approved"));
     rejectBtn.addEventListener("click", () => processRequest("rejected"));
@@ -1427,7 +1613,8 @@
       }
     });
 
-    boot();
+    getBudgetDashboardPassword();
+    setTimeout(() => budgetAuthPassword.focus(), 20);
 
     window.openApprovalModal = openApprovalModal;
   </script>

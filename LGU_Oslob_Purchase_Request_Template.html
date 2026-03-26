@@ -1404,6 +1404,24 @@
       }
     }
 
+    @media (max-width: 1100px) {
+      html, body {
+        overflow-x: auto;
+      }
+
+      .app {
+        min-width: 1180px;
+      }
+
+      .main-grid {
+        grid-template-columns: 2fr 1fr;
+      }
+
+      .session-info {
+        min-width: 210px;
+      }
+    }
+
     @media print {
       body { background: #fff !important; }
       .app { padding: 0; }
@@ -1746,12 +1764,8 @@
     <div class="admin-pg-content">
       <div class="admin-stat-bar" id="adminStatBar"></div>
       <div>
-        <div class="admin-section-title">Registered Office Accounts</div>
+        <div class="admin-section-title">Office Registration Controls</div>
         <div class="admin-cards-grid" id="adminPgCards"></div>
-      </div>
-      <div style="margin-top: 32px;">
-        <div class="admin-section-title">Submitted Purchase Requests</div>
-        <div class="admin-cards-grid" id="adminRequestsGrid"></div>
       </div>
     </div>
   </div>
@@ -1760,6 +1774,7 @@
     const STORAGE_USERS_KEY = "lguOslobOfficeUsers";
     const STORAGE_SESSION_KEY = "lguOslobSession";
     const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
+    const STORAGE_OFFICE_ACCESS_KEY = "lguOslobOfficeAccess";
     const API_BASE_URL = window.location.origin + "/api";
     const ADMIN_PASSWORD = "admin123";
 
@@ -1784,7 +1799,8 @@
       { code: "SB Session Hall", name: "Sangguniang Bayan Session Hall" },
       { code: "Vice Mayor's Office", name: "Office of the Municipal Vice Mayor" },
       { code: "MTO", name: "Municipal Tourism Office" },
-      { code: "MAO", name: "Municipal Agriculture Office" }
+      { code: "MAO", name: "Municipal Agriculture Office" },
+      { code: "MENRO", name: "Municipal Environment and Natural Resources Office" }
     ];
 
     const sectionOffice = document.getElementById("sectionOffice");
@@ -1883,6 +1899,7 @@
         const state = await apiRequest("/state");
         localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(state.users || {}));
         localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(state.requests || []));
+        localStorage.setItem(STORAGE_OFFICE_ACCESS_KEY, JSON.stringify(state.officeAccess || {}));
         isServerSyncEnabled = true;
       } catch (error) {
         isServerSyncEnabled = false;
@@ -1910,6 +1927,19 @@
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requests: requests || [] })
+      }).catch(() => {
+        isServerSyncEnabled = false;
+      });
+    }
+
+    function syncOfficeAccessToServer(officeAccess) {
+      if (!isServerSyncEnabled) {
+        return;
+      }
+      fetch(API_BASE_URL + "/office-access", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ officeAccess: officeAccess || {} })
       }).catch(() => {
         isServerSyncEnabled = false;
       });
@@ -1987,6 +2017,23 @@
     function saveRequests(requests) {
       localStorage.setItem(STORAGE_REQUESTS_KEY, JSON.stringify(requests));
       syncRequestsToServer(requests);
+    }
+
+    function getOfficeAccess() {
+      const raw = localStorage.getItem(STORAGE_OFFICE_ACCESS_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    }
+
+    function saveOfficeAccess(officeAccess) {
+      localStorage.setItem(STORAGE_OFFICE_ACCESS_KEY, JSON.stringify(officeAccess));
+      syncOfficeAccessToServer(officeAccess);
+    }
+
+    function isOfficeRegistrationEnabled(officeCode) {
+      const officeAccess = getOfficeAccess();
+      const config = officeAccess[officeCode];
+      return !(config && config.enabled === false);
     }
 
     function stripInjectedSnippetFromRaw(raw) {
@@ -2312,14 +2359,47 @@
       registerModal.classList.add("hidden");
     }
 
-    function fillOfficeSelect(element) {
+    function fillOfficeSelect(element, options) {
+      const opts = options || {};
+      const onlyEnabled = Boolean(opts.onlyEnabled);
       element.innerHTML = "";
       offices.forEach((office) => {
+        if (onlyEnabled && !isOfficeRegistrationEnabled(office.code)) {
+          return;
+        }
         const option = document.createElement("option");
         option.value = office.code;
         option.textContent = office.name + " (" + office.code + ")";
         element.appendChild(option);
       });
+    }
+
+    function refreshOfficeAuthSelects() {
+      const prevRegValue = regOffice.value;
+      const prevLoginValue = loginOffice.value;
+
+      fillOfficeSelect(regOffice, { onlyEnabled: true });
+      fillOfficeSelect(loginOffice, { onlyEnabled: true });
+
+      const adminOption = document.createElement("option");
+      adminOption.value = "ADMIN";
+      adminOption.textContent = "System Administrator (Admin)";
+      loginOffice.appendChild(adminOption);
+
+      if (regOffice.options.length > 0) {
+        regOffice.value = Array.from(regOffice.options).some((opt) => opt.value === prevRegValue)
+          ? prevRegValue
+          : regOffice.options[0].value;
+      }
+
+      const hasPrevLogin = Array.from(loginOffice.options).some((opt) => opt.value === prevLoginValue);
+      if (hasPrevLogin) {
+        loginOffice.value = prevLoginValue;
+      } else if (loginOffice.options.length > 1) {
+        loginOffice.value = loginOffice.options[0].value;
+      } else {
+        loginOffice.value = "ADMIN";
+      }
     }
 
     function formatAmount(value) {
@@ -2812,21 +2892,25 @@
 
     function renderAdminDashboard() {
       const users = getUsers();
-      const entries = Object.values(users);
+      const officeAccess = getOfficeAccess();
       const pgCards = document.getElementById("adminPgCards");
-      const requestsGrid = document.getElementById("adminRequestsGrid");
       const statBar = document.getElementById("adminStatBar");
 
       if (statBar) {
         const requests = getRequests();
         const pendingCount = requests.filter(r => r.status === "pending").length;
+        const registeredCount = Object.keys(users).length;
+        const enabledOfficeCount = offices.filter((office) => {
+          const config = officeAccess[office.code];
+          return !(config && config.enabled === false);
+        }).length;
         statBar.innerHTML = '<div class="admin-stat">'
-          + '<div class="admin-stat-num">' + entries.length + '</div>'
+          + '<div class="admin-stat-num">' + registeredCount + '</div>'
           + '<div class="admin-stat-label">Registered Offices</div>'
           + '</div>'
           + '<div class="admin-stat">'
-          + '<div class="admin-stat-num">' + requests.length + '</div>'
-          + '<div class="admin-stat-label">Total Requests</div>'
+          + '<div class="admin-stat-num">' + enabledOfficeCount + '</div>'
+          + '<div class="admin-stat-label">Registration Enabled</div>'
           + '</div>'
           + '<div class="admin-stat">'
           + '<div class="admin-stat-num">' + pendingCount + '</div>'
@@ -2836,44 +2920,30 @@
 
       if (!pgCards) return;
 
-      if (entries.length === 0) {
-        pgCards.innerHTML = '<div class="admin-empty">No office registrations yet.</div>';
-      } else {
-        pgCards.innerHTML = entries
-          .map((entry) => '<div class="admin-pg-card">'
-            + '<strong>Office Code:</strong> ' + entry.officeCode + '<br />'
-            + '<strong>Office Name:</strong> ' + entry.officeName + '<br />'
-            + '<strong>Password:</strong> ' + entry.password
-            + '</div>')
-          .join("");
-      }
+      pgCards.innerHTML = offices
+        .map((office) => {
+          const account = users[office.code];
+          const config = officeAccess[office.code];
+          const enabled = !(config && config.enabled === false);
+          const accountStatus = account ? "Registered" : "Not registered";
+          const accountStatusColor = account ? "#1b7f4a" : "#9a3412";
+          const enabledLabel = enabled ? "Enabled" : "Disabled";
+          const toggleText = enabled ? "Disable Registration" : "Enable Registration";
 
-      // Render submitted requests
-      if (!requestsGrid) return;
-
-      const requests = getRequests();
-      if (requests.length === 0) {
-        requestsGrid.innerHTML = '<div class="admin-empty">No purchase requests submitted yet.</div>';
-      } else {
-        requestsGrid.innerHTML = requests
-          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-          .map((request) => {
-            const statusStyle = request.status === "pending" ? "color: #ff9800;"
-              : request.status === "approved" ? "color: #4caf50;"
-              : request.status === "rejected" ? "color: #f44336;": "color: #666;";
-            
-            return '<div class="admin-pg-card">'
-              + '<strong>Request ID:</strong> ' + escapeHtml(request.id) + '<br />'
-              + '<strong>Office:</strong> ' + escapeHtml(request.officeName) + ' (' + escapeHtml(request.officeCode) + ')<br />'
-              + '<strong>Section:</strong> ' + escapeHtml(request.section) + '<br />'
-              + '<strong>Items:</strong> ' + request.items.length + '<br />'
-              + '<strong>Grand Total:</strong> ' + escapeHtml(request.grandTotalFormatted) + '<br />'
-              + '<strong>Submitted:</strong> ' + escapeHtml(request.timestamp) + '<br />'
-              + '<strong style="' + statusStyle + '">Status:</strong> <span style="' + statusStyle + '">' + (request.status.toUpperCase()) + '</span>'
-              + '</div>';
-          })
-          .join("");
-      }
+          return '<div class="admin-pg-card">'
+            + '<strong>Office Code:</strong> ' + escapeHtml(office.code) + '<br />'
+            + '<strong>Office Name:</strong> ' + escapeHtml(office.name) + '<br />'
+            + '<strong>Registration:</strong> <span style="color:' + (enabled ? "#1b7f4a" : "#b91c1c") + ';font-weight:700;">' + enabledLabel + '</span><br />'
+            + '<strong>Account:</strong> <span style="color:' + accountStatusColor + ';font-weight:700;">' + accountStatus + '</span><br />'
+            + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'
+            + '<button type="button" class="btn btn-secondary js-office-toggle" data-office-code="' + escapeHtml(office.code) + '">' + toggleText + '</button>'
+            + (account
+              ? '<button type="button" class="btn btn-gold js-office-reregister" data-office-code="' + escapeHtml(office.code) + '">Re-register Office</button>'
+              : '')
+            + '</div>'
+            + '</div>';
+        })
+        .join("");
     }
 
     function renderBudgetDashboard() {
@@ -3161,6 +3231,16 @@
       const officeCode = regOffice.value;
       const password = regPassword.value.trim();
 
+      if (!officeCode) {
+        registerStatus.textContent = "No office available for registration.";
+        return;
+      }
+
+      if (!isOfficeRegistrationEnabled(officeCode)) {
+        registerStatus.textContent = "Registration for this office is disabled by admin.";
+        return;
+      }
+
       if (!password) {
         registerStatus.textContent = "Password is required.";
         return;
@@ -3205,6 +3285,11 @@
         return;
       }
 
+      if (!isOfficeRegistrationEnabled(officeCode)) {
+        loginStatus.textContent = "This office is currently disabled by admin.";
+        return;
+      }
+
       const users = getUsers();
       const account = users[officeCode];
 
@@ -3225,16 +3310,46 @@
       renderSession();
     }
 
-    fillOfficeSelect(sectionOffice);
-    fillOfficeSelect(regOffice);
-    fillOfficeSelect(loginOffice);
-    const adminOption = document.createElement("option");
-    adminOption.value = "ADMIN";
-    adminOption.textContent = "System Administrator (Admin)";
-    loginOffice.appendChild(adminOption);
+    function setOfficeRegistrationEnabled(officeCode, enabled) {
+      const officeAccess = getOfficeAccess();
+      if (!enabled) {
+        officeAccess[officeCode] = { enabled: false };
+      } else {
+        delete officeAccess[officeCode];
+      }
+      saveOfficeAccess(officeAccess);
+      refreshOfficeAuthSelects();
+      renderAdminDashboard();
+    }
 
-    regOffice.value = "BPLO";
-    loginOffice.value = "BPLO";
+    function adminReRegisterOffice(officeCode) {
+      const users = getUsers();
+      if (!users[officeCode]) {
+        return;
+      }
+      const office = offices.find((item) => item.code === officeCode);
+      const officeLabel = office ? office.name + " (" + office.code + ")" : officeCode;
+      const ok = window.confirm("Allow re-registration for " + officeLabel + "? This will remove the current office password and signature.");
+      if (!ok) {
+        return;
+      }
+
+      delete users[officeCode];
+      saveUsers(users);
+      saveOfficeSignatureBackup(officeCode, "");
+      refreshOfficeAuthSelects();
+      renderAdminDashboard();
+    }
+
+    fillOfficeSelect(sectionOffice);
+    refreshOfficeAuthSelects();
+
+    if (Array.from(regOffice.options).some((opt) => opt.value === "BPLO")) {
+      regOffice.value = "BPLO";
+    }
+    if (Array.from(loginOffice.options).some((opt) => opt.value === "BPLO")) {
+      loginOffice.value = "BPLO";
+    }
     sectionOffice.value = "";
     designation.value = "";
 
@@ -3279,6 +3394,29 @@
 
     registerOfficeBtn.addEventListener("click", registerOffice);
     loginOfficeBtn.addEventListener("click", loginOfficeUser);
+    const adminPgCards = document.getElementById("adminPgCards");
+    adminPgCards.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      if (target.classList.contains("js-office-toggle")) {
+        const officeCode = target.getAttribute("data-office-code");
+        if (!officeCode) {
+          return;
+        }
+        setOfficeRegistrationEnabled(officeCode, !isOfficeRegistrationEnabled(officeCode));
+      }
+
+      if (target.classList.contains("js-office-reregister")) {
+        const officeCode = target.getAttribute("data-office-code");
+        if (!officeCode) {
+          return;
+        }
+        adminReRegisterOffice(officeCode);
+      }
+    });
     openRegisterModalBtn.addEventListener("click", openRegisterModal);
     closeRegisterModalBtn.addEventListener("click", closeRegisterModal);
     applySignatureBtn.addEventListener("click", () => applyOfficeSignature(true));

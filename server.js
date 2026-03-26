@@ -36,6 +36,7 @@ async function ensureTable() {
         id SMALLINT PRIMARY KEY DEFAULT 1,
         users JSONB NOT NULL DEFAULT '{}'::jsonb,
         requests JSONB NOT NULL DEFAULT '[]'::jsonb,
+        office_access JSONB NOT NULL DEFAULT '{}'::jsonb,
         budget_profile JSONB NOT NULL DEFAULT '{}'::jsonb,
         mayor_profile JSONB NOT NULL DEFAULT '{}'::jsonb,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -45,10 +46,11 @@ async function ensureTable() {
 
     await pool.query("ALTER TABLE app_state ADD COLUMN IF NOT EXISTS budget_profile JSONB NOT NULL DEFAULT '{}'::jsonb");
     await pool.query("ALTER TABLE app_state ADD COLUMN IF NOT EXISTS mayor_profile JSONB NOT NULL DEFAULT '{}'::jsonb");
+    await pool.query("ALTER TABLE app_state ADD COLUMN IF NOT EXISTS office_access JSONB NOT NULL DEFAULT '{}'::jsonb");
 
     await pool.query(`
-      INSERT INTO app_state (id, users, requests, budget_profile, mayor_profile)
-      VALUES (1, '{}'::jsonb, '[]'::jsonb, '{}'::jsonb, '{}'::jsonb)
+      INSERT INTO app_state (id, users, requests, office_access, budget_profile, mayor_profile)
+      VALUES (1, '{}'::jsonb, '[]'::jsonb, '{}'::jsonb, '{}'::jsonb, '{}'::jsonb)
       ON CONFLICT (id) DO NOTHING;
     `);
     return;
@@ -59,6 +61,7 @@ async function ensureTable() {
       id INTEGER PRIMARY KEY,
       users TEXT NOT NULL DEFAULT '{}',
       requests TEXT NOT NULL DEFAULT '[]',
+      office_access TEXT NOT NULL DEFAULT '{}',
       budget_profile TEXT NOT NULL DEFAULT '{}',
       mayor_profile TEXT NOT NULL DEFAULT '{}',
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -67,9 +70,15 @@ async function ensureTable() {
   `);
 
   sqliteDb.prepare(`
-    INSERT OR IGNORE INTO app_state (id, users, requests, budget_profile, mayor_profile, updated_at)
-    VALUES (1, '{}', '[]', '{}', '{}', datetime('now'))
+    INSERT OR IGNORE INTO app_state (id, users, requests, office_access, budget_profile, mayor_profile, updated_at)
+    VALUES (1, '{}', '[]', '{}', '{}', '{}', datetime('now'))
   `).run();
+
+  try {
+    sqliteDb.prepare("ALTER TABLE app_state ADD COLUMN office_access TEXT NOT NULL DEFAULT '{}'").run();
+  } catch (error) {
+    // Ignore duplicate-column errors for existing deployments.
+  }
 }
 
 function normalizeUsers(users) {
@@ -82,6 +91,10 @@ function normalizeRequests(requests) {
 
 function normalizeProfile(profile) {
   return profile && typeof profile === "object" && !Array.isArray(profile) ? profile : {};
+}
+
+function normalizeOfficeAccess(officeAccess) {
+  return officeAccess && typeof officeAccess === "object" && !Array.isArray(officeAccess) ? officeAccess : {};
 }
 
 function safeParseJson(value, fallback) {
@@ -97,24 +110,26 @@ function safeParseJson(value, fallback) {
 
 async function getState() {
   if (USE_POSTGRES) {
-    const result = await pool.query("SELECT users, requests, budget_profile, mayor_profile, updated_at FROM app_state WHERE id = 1");
-    const row = result.rows[0] || { users: {}, requests: [], budget_profile: {}, mayor_profile: {}, updated_at: null };
+    const result = await pool.query("SELECT users, requests, office_access, budget_profile, mayor_profile, updated_at FROM app_state WHERE id = 1");
+    const row = result.rows[0] || { users: {}, requests: [], office_access: {}, budget_profile: {}, mayor_profile: {}, updated_at: null };
     return {
       users: normalizeUsers(row.users),
       requests: normalizeRequests(row.requests),
+      officeAccess: normalizeOfficeAccess(row.office_access),
       budgetProfile: normalizeProfile(row.budget_profile),
       mayorProfile: normalizeProfile(row.mayor_profile),
       updatedAt: row.updated_at
     };
   }
 
-  const row = sqliteDb.prepare("SELECT users, requests, budget_profile, mayor_profile, updated_at FROM app_state WHERE id = 1").get();
+  const row = sqliteDb.prepare("SELECT users, requests, office_access, budget_profile, mayor_profile, updated_at FROM app_state WHERE id = 1").get();
   if (!row) {
-    return { users: {}, requests: [], budgetProfile: {}, mayorProfile: {}, updatedAt: null };
+    return { users: {}, requests: [], officeAccess: {}, budgetProfile: {}, mayorProfile: {}, updatedAt: null };
   }
   return {
     users: normalizeUsers(safeParseJson(row.users, {})),
     requests: normalizeRequests(safeParseJson(row.requests, [])),
+    officeAccess: normalizeOfficeAccess(safeParseJson(row.office_access, {})),
     budgetProfile: normalizeProfile(safeParseJson(row.budget_profile, {})),
     mayorProfile: normalizeProfile(safeParseJson(row.mayor_profile, {})),
     updatedAt: row.updated_at
@@ -135,6 +150,14 @@ async function saveRequests(requests) {
     return;
   }
   sqliteDb.prepare("UPDATE app_state SET requests = ?, updated_at = datetime('now') WHERE id = 1").run(JSON.stringify(requests));
+}
+
+async function saveOfficeAccess(officeAccess) {
+  if (USE_POSTGRES) {
+    await pool.query("UPDATE app_state SET office_access = $1::jsonb, updated_at = NOW() WHERE id = 1", [JSON.stringify(officeAccess)]);
+    return;
+  }
+  sqliteDb.prepare("UPDATE app_state SET office_access = ?, updated_at = datetime('now') WHERE id = 1").run(JSON.stringify(officeAccess));
 }
 
 async function saveBudgetProfile(profile) {
@@ -200,6 +223,16 @@ app.put("/api/requests", async (req, res) => {
     res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: "Failed to save requests." });
+  }
+});
+
+app.put("/api/office-access", async (req, res) => {
+  const officeAccess = normalizeOfficeAccess(req.body && req.body.officeAccess);
+  try {
+    await saveOfficeAccess(officeAccess);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to save office access settings." });
   }
 });
 

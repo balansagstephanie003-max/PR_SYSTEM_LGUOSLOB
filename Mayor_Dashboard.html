@@ -250,10 +250,46 @@
       .stats { grid-template-columns: 1fr; }
       .topbar { flex-direction: column; align-items: flex-start; }
     }
+
+    @media (max-width: 1200px) {
+      html, body {
+        overflow-x: auto;
+      }
+
+      .app {
+        min-width: 1280px;
+      }
+
+      .content {
+        width: 1280px;
+        min-width: 1280px;
+      }
+
+      .dashboard-columns {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      #pendingGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .setup-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stats {
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+      }
+
+      .topbar {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div id="appRoot" class="app hidden">
     <div class="topbar">
       <div class="topbar-left">
         <img src="images/OSLOB SEAL.png" alt="LGU Oslob Seal" class="topbar-logo" />
@@ -262,7 +298,10 @@
           <p>Municipality of Oslob &mdash; Purchase Request Signing &amp; Approval</p>
         </div>
       </div>
-      <span class="badge">Mayor's Office</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="openChangePasswordBtn" class="btn btn-light" type="button">Change Password</button>
+        <span class="badge">Mayor's Office</span>
+      </div>
     </div>
 
     <div class="content">
@@ -346,11 +385,59 @@
 
   <div id="mayorActionToast" class="request-toast" aria-live="polite"></div>
 
+  <div id="mayorAuthModal" class="modal-backdrop">
+    <div class="modal" style="max-width:460px;">
+      <div class="modal-head">
+        <h3>Mayor Dashboard Login</h3>
+      </div>
+      <div>
+        <label for="mayorAuthPassword" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Password</label>
+        <input id="mayorAuthPassword" type="password" placeholder="Enter Mayor password"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+      <div class="actions">
+        <button id="mayorAuthLoginBtn" class="btn btn-dark" type="button">Login</button>
+      </div>
+      <div id="mayorAuthStatus" class="status-msg"></div>
+    </div>
+  </div>
+
+  <div id="mayorChangePasswordModal" class="modal-backdrop hidden">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-head">
+        <h3>Change Mayor Password</h3>
+        <button id="closeMayorChangePasswordBtn" class="btn btn-light" type="button">Close</button>
+      </div>
+      <div>
+        <label for="mayorCurrentPassword" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Current Password</label>
+        <input id="mayorCurrentPassword" type="password" placeholder="Enter current password"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+      <div>
+        <label for="mayorNewPassword" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">New Password</label>
+        <input id="mayorNewPassword" type="password" placeholder="Enter new password"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+      <div>
+        <label for="mayorConfirmPassword" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Confirm New Password</label>
+        <input id="mayorConfirmPassword" type="password" placeholder="Confirm new password"
+          style="width:100%;border:1px solid #cfcfcf;border-radius:7px;padding:8px 10px;font-size:13px;" />
+      </div>
+      <div class="actions">
+        <button id="saveMayorPasswordBtn" class="btn btn-dark" type="button">Save Password</button>
+      </div>
+      <div id="mayorChangePasswordStatus" class="status-msg"></div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_REQUESTS_KEY = "lguOslobPurchaseRequests";
     const STORAGE_MAYOR_KEY    = "lguOslobMayorProfile";
+    const STORAGE_MAYOR_PASSWORD_KEY = "lguOslobMayorDashboardPassword";
+    const DEFAULT_MAYOR_PASSWORD = "mayor123";
     const API_BASE_URL         = window.location.origin + "/api";
     const STAMP_IMAGE_PATH      = "images/stamp.png";
+    const appRoot             = document.getElementById("appRoot");
 
     const statsBar            = document.getElementById("statsBar");
     const pendingGrid         = document.getElementById("pendingGrid");
@@ -370,12 +457,95 @@
     const saveMayorSigBtn     = document.getElementById("saveMayorSigBtn");
     const mayorSigPreview     = document.getElementById("mayorSigPreview");
     const setupStatus         = document.getElementById("setupStatus");
+    const openChangePasswordBtn = document.getElementById("openChangePasswordBtn");
+    const mayorAuthModal      = document.getElementById("mayorAuthModal");
+    const mayorAuthPassword   = document.getElementById("mayorAuthPassword");
+    const mayorAuthLoginBtn   = document.getElementById("mayorAuthLoginBtn");
+    const mayorAuthStatus     = document.getElementById("mayorAuthStatus");
+    const mayorChangePasswordModal = document.getElementById("mayorChangePasswordModal");
+    const closeMayorChangePasswordBtn = document.getElementById("closeMayorChangePasswordBtn");
+    const mayorCurrentPassword = document.getElementById("mayorCurrentPassword");
+    const mayorNewPassword = document.getElementById("mayorNewPassword");
+    const mayorConfirmPassword = document.getElementById("mayorConfirmPassword");
+    const saveMayorPasswordBtn = document.getElementById("saveMayorPasswordBtn");
+    const mayorChangePasswordStatus = document.getElementById("mayorChangePasswordStatus");
 
     let currentRequestId = null;
     let processedFilter  = "none";
     let savedMayorSig    = "";
     let mayorToastTimer  = null;
     let isServerSyncEnabled = false;
+    let hasDashboardStarted = false;
+
+    function getMayorDashboardPassword() {
+      const saved = localStorage.getItem(STORAGE_MAYOR_PASSWORD_KEY);
+      if (saved) {
+        return saved;
+      }
+      localStorage.setItem(STORAGE_MAYOR_PASSWORD_KEY, DEFAULT_MAYOR_PASSWORD);
+      return DEFAULT_MAYOR_PASSWORD;
+    }
+
+    function startDashboardOnce() {
+      if (hasDashboardStarted) {
+        return;
+      }
+      hasDashboardStarted = true;
+      boot();
+    }
+
+    function unlockMayorDashboard() {
+      appRoot.classList.remove("hidden");
+      mayorAuthModal.classList.add("hidden");
+      startDashboardOnce();
+    }
+
+    function handleMayorLogin() {
+      mayorAuthStatus.textContent = "";
+      if (mayorAuthPassword.value !== getMayorDashboardPassword()) {
+        mayorAuthStatus.textContent = "Invalid password.";
+        return;
+      }
+      mayorAuthPassword.value = "";
+      unlockMayorDashboard();
+    }
+
+    function openMayorChangePasswordModal() {
+      mayorChangePasswordStatus.textContent = "";
+      mayorCurrentPassword.value = "";
+      mayorNewPassword.value = "";
+      mayorConfirmPassword.value = "";
+      mayorChangePasswordModal.classList.remove("hidden");
+      setTimeout(() => mayorCurrentPassword.focus(), 20);
+    }
+
+    function closeMayorChangePasswordModal() {
+      mayorChangePasswordModal.classList.add("hidden");
+    }
+
+    function saveMayorDashboardPassword() {
+      const current = mayorCurrentPassword.value;
+      const next = mayorNewPassword.value.trim();
+      const confirm = mayorConfirmPassword.value.trim();
+      const existing = getMayorDashboardPassword();
+
+      if (current !== existing) {
+        mayorChangePasswordStatus.textContent = "Current password is incorrect.";
+        return;
+      }
+      if (!next) {
+        mayorChangePasswordStatus.textContent = "New password is required.";
+        return;
+      }
+      if (next !== confirm) {
+        mayorChangePasswordStatus.textContent = "New password and confirm password do not match.";
+        return;
+      }
+
+      localStorage.setItem(STORAGE_MAYOR_PASSWORD_KEY, next);
+      mayorChangePasswordStatus.textContent = "Password updated successfully.";
+      setTimeout(closeMayorChangePasswordModal, 600);
+    }
 
     async function apiRequest(path, options) {
       const response = await fetch(API_BASE_URL + path, options || {});
@@ -811,6 +981,21 @@
 
     /* ── Event Listeners ── */
     closeModalBtn.addEventListener("click", closeReviewModal);
+    mayorAuthLoginBtn.addEventListener("click", handleMayorLogin);
+    mayorAuthPassword.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleMayorLogin();
+      }
+    });
+    openChangePasswordBtn.addEventListener("click", openMayorChangePasswordModal);
+    closeMayorChangePasswordBtn.addEventListener("click", closeMayorChangePasswordModal);
+    saveMayorPasswordBtn.addEventListener("click", saveMayorDashboardPassword);
+    mayorChangePasswordModal.addEventListener("click", (event) => {
+      if (event.target === mayorChangePasswordModal) {
+        closeMayorChangePasswordModal();
+      }
+    });
     reviewModal.addEventListener("click", (e) => { if (e.target === reviewModal) closeReviewModal(); });
     saveMayorSigBtn.addEventListener("click", saveMayorSignatureAction);
     signBtn.addEventListener("click",    () => processRequest("sign"));
@@ -831,7 +1016,8 @@
       renderDashboard();
     }
 
-    boot();
+    getMayorDashboardPassword();
+    setTimeout(() => mayorAuthPassword.focus(), 20);
   </script>
 </body>
 </html>
